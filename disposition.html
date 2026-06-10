@@ -1,0 +1,461 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Disposition — Audit & Messages</title>
+<style>
+:root { color-scheme: light; }
+* { box-sizing: border-box; }
+body { margin:0; background:#f4f6fa; color:#1a2233; font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif; font-size:13.5px; line-height:1.45; }
+.wrap { max-width:1320px; margin:0 auto; padding:18px; }
+h1 { font-size:19px; margin:0 0 2px; color:#1f3864; }
+.sub { color:#6b7790; font-size:12px; margin-bottom:12px; }
+.toptabs { display:flex; gap:6px; margin-bottom:14px; flex-wrap:wrap; }
+.toptabs button { font-size:13px; padding:9px 16px; border:1px solid #c3cee2; background:#fff; color:#1f3864; border-radius:8px; font-weight:600; cursor:pointer; }
+.toptabs button.on { background:#1f3864; color:#fff; border-color:#1f3864; }
+.hidden { display:none; }
+.panel { background:#fff; border:1px solid #e2e8f3; border-radius:10px; padding:16px 18px; margin-bottom:16px; box-shadow:0 1px 2px rgba(20,40,80,.04); }
+button.primary { background:#1f3864; color:#fff; border:1px solid #1f3864; padding:8px 14px; border-radius:8px; font-weight:600; cursor:pointer; font-size:13px; }
+button.primary:hover{ background:#284a7e; }
+select, input[type=text], input[type=date] { font-size:13px; padding:6px 9px; border:1px solid #c3cee2; border-radius:7px; background:#fff; color:#1a2233; font-weight:600; font-family:inherit; }
+input[type=text]{ font-weight:500; }
+
+/* ---- shared tables ---- */
+#auditView table, #playView table, #adhView table { border-collapse:collapse; width:100%; font-size:12.5px; }
+#auditView th, #auditView td, #playView th, #playView td, #adhView th, #adhView td { border:1px solid #e2e8f3; padding:6px 8px; text-align:center; }
+#auditView th, #playView th, #adhView th { background:#1f3864; color:#fff; font-weight:600; }
+#auditView td.l, #auditView th.l, #playView td.l, #playView th.l, #adhView td.l, #adhView th.l { text-align:left; }
+button.sm { font-size:11.5px; padding:5px 10px; border-radius:6px; border:1px solid #c3cee2; background:#fff; color:#1f3864; font-weight:600; cursor:pointer; }
+button.sm:hover{ background:#f0f4fb; } button.del{ color:#c0392b; border-color:#e7c3c3; }
+.pct{ font-weight:700; } .pct.g{ color:#1e8449; } .pct.a{ color:#b9651b; } .pct.b{ color:#c0392b; }
+
+/* ---- AUDIT ---- */
+#auditView .bar { display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap; background:#fff; border:1px solid #e2e8f3; border-radius:10px; padding:12px 14px; margin-bottom:12px; box-shadow:0 1px 2px rgba(20,40,80,.04); }
+#auditView .fld { display:flex; flex-direction:column; gap:3px; }
+#auditView .fld label { font-size:10.5px; color:#6b7790; font-weight:700; text-transform:uppercase; letter-spacing:.03em; }
+#auditView select { min-width:150px; } #auditView input[type=text]{ min-width:170px; }
+#auditView .stat { display:flex; gap:14px; flex-wrap:wrap; margin:0 0 12px; }
+#auditView .chip { background:#fff; border:1px solid #e2e8f3; border-radius:9px; padding:8px 13px; box-shadow:0 1px 2px rgba(20,40,80,.04); }
+#auditView .chip .n { font-size:20px; font-weight:700; color:#1f3864; }
+#auditView .chip .l { font-size:10.5px; color:#6b7790; text-transform:uppercase; letter-spacing:.03em; }
+#auditView .chip.real .n{ color:#1e8449; } #auditView .chip.forced .n{ color:#c0392b; } #auditView .chip.rem .n{ color:#b9651b; }
+#auditView .status { font-size:12px; color:#6b7790; margin:4px 0 10px; }
+#auditView .prog { height:6px; background:#e9eef7; border-radius:4px; overflow:hidden; margin:6px 0 14px; }
+#auditView .prog > div { height:100%; background:linear-gradient(90deg,#1e8449,#27ae60); width:0%; transition:width .3s; }
+#auditView .tablewrap { background:#fff; border:1px solid #e2e8f3; border-radius:10px; overflow:auto; box-shadow:0 1px 2px rgba(20,40,80,.04); max-height:70vh; }
+#auditView th { position:sticky; top:0; z-index:2; white-space:nowrap; }
+#auditView td { white-space:nowrap; border-bottom:1px solid #eef1f7; border-left:none; border-right:none; }
+#auditView tr:hover td { background:#f7f9fd; }
+#auditView td.name { text-align:left; font-weight:600; max-width:170px; overflow:hidden; text-overflow:ellipsis; }
+#auditView td.ask { text-align:left; max-width:230px; white-space:normal; color:#55607a; font-size:11px; }
+.badge { font-size:10.5px; font-weight:700; padding:2px 7px; border-radius:20px; }
+.b-ni{ background:#fdecea; color:#c0392b; } .b-dq{ background:#f4ecfb; color:#7d3cb5; }
+.b-dnp{ background:#fff4e5; color:#b9651b; } .b-fu{ background:#eaf1fb; color:#2e5496; }
+.touch.bad{ color:#c0392b; font-weight:700; } .touch.amber{ color:#b9651b; font-weight:700; } .touch.good{ color:#1e8449; font-weight:700; }
+.vbtns { display:inline-flex; gap:4px; } .vbtns button { padding:3px 8px; font-size:11px; }
+.vb-real.on { background:#1e8449; color:#fff; border-color:#1e8449; } .vb-forced.on { background:#c0392b; color:#fff; border-color:#c0392b; }
+.reason { width:150px; font-size:11px; padding:4px 6px; }
+a.open { color:#2e5496; font-weight:600; text-decoration:none; }
+#auditView .empty { padding:26px; text-align:center; color:#8a93a8; }
+#auditView .note { font-size:11px; color:#8a93a8; margin-top:10px; }
+.verdict-real td { background:#f2fbf5 !important; } .verdict-forced td { background:#fdf3f2 !important; }
+
+/* ---- MESSAGES ---- */
+#playView .stage h2, #adhView h2 { font-size:14.5px; margin:0 0 2px; color:#1f3864; }
+#playView .stage .d { font-size:11.5px; color:#8a93a8; margin-bottom:10px; }
+#playView .two { display:grid; grid-template-columns:1fr 1fr; gap:14px; }
+@media (max-width:760px){ #playView .two{ grid-template-columns:1fr; } }
+#playView .fld label, #adhView .fld label { font-size:11px; color:#6b7790; font-weight:700; text-transform:uppercase; letter-spacing:.03em; display:block; margin-bottom:3px; }
+#playView .fld.cur label::before{ content:"● "; color:#b9651b; } #playView .fld.rep label::before{ content:"● "; color:#1e8449; }
+#playView textarea, #adhView textarea { width:100%; min-height:84px; font-size:13px; padding:8px 10px; border:1px solid #c3cee2; border-radius:8px; resize:vertical; font-family:inherit; color:#1a2233; background:#fff; }
+#playView textarea.cur { background:#fffaf3; border-color:#f0d9b8; } #playView textarea.rep { background:#f4fbf6; border-color:#bfe3cb; }
+#playView .notes { width:100%; margin-top:10px; }
+#playView .varhead { font-size:11.5px; font-weight:700; color:#1f3864; margin:14px 0 6px; text-transform:uppercase; letter-spacing:.03em; }
+#playView .var { border:1px solid #e6ebf5; border-radius:8px; padding:9px 10px; margin-bottom:8px; background:#fbfcfe; }
+#playView .var .vtop { display:flex; gap:8px; align-items:center; margin-bottom:6px; }
+#playView .var .vtop input { flex:0 0 200px; } #playView .var .vnote { width:100%; margin-top:6px; font-size:12px; }
+#playView .star { cursor:pointer; font-size:18px; color:#cfd6e4; user-select:none; } #playView .star.on { color:#f1b500; }
+#playView .var.best { border-color:#f1c84b; background:#fffdf4; }
+#adhView .row { display:flex; gap:10px; flex-wrap:wrap; align-items:flex-end; }
+#adhView .fld2 { display:flex; flex-direction:column; gap:3px; } #adhView .fld2 label{ font-size:10.5px; color:#6b7790; font-weight:700; text-transform:uppercase; }
+.v-on{ color:#1e8449; font-weight:700; } .v-partial{ color:#b9651b; font-weight:700; } .v-off{ color:#c0392b; font-weight:700; }
+#adhView .msgcell{ text-align:left; max-width:320px; white-space:normal; color:#55607a; font-size:11.5px; }
+.hint { font-size:11px; color:#8a93a8; margin-top:8px; }
+.savedtag { font-size:11px; color:#1e8449; margin-left:8px; opacity:0; transition:opacity .2s; } .savedtag.show{ opacity:1; }
+.statline { font-size:12px; color:#6b7790; margin:2px 0 12px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Disposition — Audit &amp; Messages</h1>
+  <div class="sub">One place for everything disposition: audit the kills (Real No vs Forced No), keep the approved message playbook, and track post-training adherence.</div>
+
+  <div class="toptabs">
+    <button data-view="auditView" class="on">🔪 Audit the Kills</button>
+    <button data-view="playView">📒 Message Playbook</button>
+    <button data-view="adhView">✅ Adherence</button>
+  </div>
+
+  <!-- ============ AUDIT ============ -->
+  <div id="auditView">
+    <div class="sub" style="margin-top:-4px">Every NI / DQ / DNP / FU-DNP is a claim. Open the record, check the call &amp; messages, then mark it a <b>Real No</b> (genuine reject / unreachable) or a <b>Forced No</b> (rep killed it without real effort). Saved in this browser, exportable to CSV.</div>
+    <div class="bar">
+      <div class="fld"><label>Creator</label>
+        <select id="creator">
+          <option value="kartikkapoorconsultation">kartikkapoorconsultation</option>
+          <option value="wanderess_priyanka">wanderess_priyanka</option>
+          <option value="payalineurope">payalineurope</option>
+          <option value="technomanagers">technomanagers</option>
+          <option value="ayush_singh13">ayush_singh13</option>
+          <option value="ajay_shenoy">ajay_shenoy</option>
+          <option value="__ALL__">— All 6 creators (heavy) —</option>
+        </select>
+      </div>
+      <div class="fld"><label>Stage</label>
+        <select id="fStage"><option value="">All kills</option><option value="ni_not_interested">NI — Not interested</option><option value="disqualified">DQ — Disqualified</option><option value="dnp_did_not_pick">DNP — Did not pick</option><option value="FU_DNP">FU-DNP</option></select>
+      </div>
+      <div class="fld"><label>Rep (owner)</label><select id="fRep"><option value="">All reps</option></select></div>
+      <div class="fld"><label>Verdict</label>
+        <select id="fVerdict"><option value="">All</option><option value="__none__">Unaudited</option><option value="real">Real No</option><option value="forced">Forced No</option></select>
+      </div>
+      <div class="fld"><label>Search name</label><input type="text" id="fSearch" placeholder="contact name…"></div>
+      <div class="fld"><label>&nbsp;</label><button class="sm" id="reload">Reload</button></div>
+      <div class="fld"><label>&nbsp;</label><button class="primary" id="export">Export CSV</button></div>
+    </div>
+    <div class="status" id="status">Loading…</div>
+    <div class="prog"><div id="progbar"></div></div>
+    <div class="stat" id="stat"></div>
+    <div class="tablewrap"><table id="tbl"><thead></thead><tbody></tbody></table></div>
+    <div class="note">⌀touch context: <span class="touch bad">red ≤1</span> · <span class="touch amber">amber 2</span> · <span class="touch good">green ≥3</span> logged contacts before the kill. A DNP with ≤1 attempt, or an NI with no real call, is the textbook "forced no." Owner shows the contact's current owner; many NI/DQ were auto-stripped of owner, shown as "— unowned". Showing up to 800 rows at a time — narrow with the slicers to see the rest.</div>
+  </div>
+
+  <!-- ============ PLAYBOOK ============ -->
+  <div id="playView" class="hidden">
+    <div class="sub" style="margin-top:-4px">Author the <b style="color:#b9651b">current</b> and the <b style="color:#1e8449">approved replacement</b> message for each stage, then test variants to find the best.</div>
+    <div class="statline" id="playStat"></div>
+    <div id="stages"></div>
+    <button class="primary" id="exportPlay">Export playbook CSV</button>
+  </div>
+
+  <!-- ============ ADHERENCE ============ -->
+  <div id="adhView" class="hidden">
+    <div class="sub" style="margin-top:-4px">Log what reps actually send (paste from WhatsApp), mark on/off-script, and watch adherence move before vs after training. <i>WhatsApp/SMS bodies aren't retrievable from HubSpot, so messages are captured here during spot-checks.</i></div>
+    <div class="panel">
+      <div class="row">
+        <div class="fld2"><label>Training date (split pre / post)</label><input type="date" id="trainDate"></div>
+        <div class="hint" style="margin:0;align-self:center">Entries on/after this date count as <b>post-training</b>.</div>
+      </div>
+    </div>
+    <div class="panel">
+      <h2 style="margin:0 0 10px">Capture a sent message</h2>
+      <div class="row">
+        <div class="fld2"><label>Rep</label><input type="text" id="cRep" list="repList" placeholder="rep name…" style="min-width:170px"><datalist id="repList"></datalist></div>
+        <div class="fld2"><label>Stage</label><select id="cStage"></select></div>
+        <div class="fld2"><label>Date sent</label><input type="date" id="cDate"></div>
+        <div class="fld2"><label>Adherence</label><select id="cVerdict"><option value="on">On-script</option><option value="partial">Partial</option><option value="off">Off-script</option></select></div>
+      </div>
+      <div class="fld" style="margin-top:10px"><label style="font-size:11px;color:#6b7790;font-weight:700;text-transform:uppercase;display:block;margin-bottom:3px">Actual message sent (paste from WhatsApp)</label><textarea id="cMsg" placeholder="paste the exact message the rep sent…"></textarea></div>
+      <div class="row" style="margin-top:8px">
+        <div class="fld2" style="flex:1"><label>Note (optional)</label><input type="text" id="cNote" placeholder="what was off, which variant, context…" style="width:100%"></div>
+        <button class="primary" id="addEntry">Add entry</button>
+      </div>
+    </div>
+    <div class="panel">
+      <h2 style="margin:0 0 4px">Adherence scoreboard — % on-script (post-training)</h2>
+      <div class="statline" id="adhStat"></div>
+      <div style="overflow-x:auto"><table id="board"></table></div>
+      <div class="hint">Cell = on-script share for that rep &amp; stage since the training date (on=1, partial=0.5, off=0). The <b>Pre→Post</b> column shows each rep's overall adherence before vs after training. Green ≥80% · amber ≥50% · red below.</div>
+    </div>
+    <div class="panel">
+      <h2 style="margin:0 0 10px">Capture log <button class="primary" id="exportAdh" style="float:right">Export adherence CSV</button></h2>
+      <div style="overflow-x:auto"><table id="log"></table></div>
+    </div>
+  </div>
+</div>
+
+<script>
+/* ============================= AUDIT TOOL ============================= */
+(function(){
+const SEARCH="mcp__e21da083-e66f-48be-881b-fa1bcef88404__search_crm_objects";
+const OWN="mcp__e21da083-e66f-48be-881b-fa1bcef88404__search_owners";
+const HUB="https://app.hubspot.com/contacts/244132076/record/0-1/";
+const LSKEY="killaudit_v1";
+const CREATORS=["kartikkapoorconsultation","wanderess_priyanka","payalineurope","technomanagers","ayush_singh13","ajay_shenoy"];
+const KILLS=[["ni_not_interested","NI"],["disqualified","DQ"],["dnp_did_not_pick","DNP"],["FU_DNP","FU-DNP"]];
+const STAGE_SHORT={ni_not_interested:"NI",disqualified:"DQ",dnp_did_not_pick:"DNP",FU_DNP:"FU-DNP"};
+const STAGE_CLS={ni_not_interested:"b-ni",disqualified:"b-dq",dnp_did_not_pick:"b-dnp",FU_DNP:"b-fu"};
+const OWNER_FALLBACK={"164903369":"Utkarsh Sonkar","164253071":"Madhaya Praveen","165087316":"Gourav Hansaria","164373378":"Mridusmita Bhadra","162063126":"Fathima Nazrin","162245914":"Harshita Guha","164145003":"Vansh Mane","164253073":"Jay Naidu","162113583":"aman kumar singh","164373377":"Abhay Kumar Gupta","164373372":"Vanshika Laheja","163983265":"Sidharth Nair","165087317":"Darshan Venkataraman"};
+let DATA=[], NAMES={}, DEC=loadDec();
+function loadDec(){ try{ return JSON.parse(localStorage.getItem(LSKEY)||"{}"); }catch(e){ return {}; } }
+function saveDec(){ try{ localStorage.setItem(LSKEY,JSON.stringify(DEC)); }catch(e){} }
+function deepParse(v){ if(typeof v==="string"){ const t=v.trim(); if(t&&(t[0]==="{"||t[0]==="[")){ try{return deepParse(JSON.parse(v));}catch(e){return v;} } return v; } if(Array.isArray(v))return v.map(deepParse); if(v&&typeof v==="object"){const o={};for(const k in v)o[k]=deepParse(v[k]);return o;} return v; }
+function deepFindArrayWithKey(v,key){ if(v==null)return null; if(Array.isArray(v)){ if(v.length&&typeof v[0]==="object"&&v[0]&&key in v[0])return v; for(const x of v){const r=deepFindArrayWithKey(x,key);if(r)return r;}return null;} if(typeof v==="object"){for(const k in v){const r=deepFindArrayWithKey(v[k],key);if(r)return r;}} return null; }
+function deepFindNumber(v,key){ if(v==null)return null; if(Array.isArray(v)){for(const x of v){const r=deepFindNumber(x,key);if(r!=null)return r;}return null;} if(typeof v==="object"){ if(typeof v[key]==="number")return v[key]; for(const k in v){const r=deepFindNumber(v[k],key);if(r!=null)return r;}} return null; }
+async function call(name,args){ return await window.cowork.callMcpTool(name,args); }
+function killGroups(creator){ return KILLS.map(([st])=>({filters:[{propertyName:"topmate_username",operator:"EQ",value:creator},{propertyName:"contact_engagement_stage",operator:"EQ",value:st}]})); }
+async function fetchCreator(creator,onProg){
+  const props=["hs_full_name_or_email","contact_engagement_stage","hubspot_owner_id","num_contacted_notes","call_outcome","last_call_date_and_time","follow_up_date_and_time","tm_query","createdate"];
+  const out=[]; let offset=0; const lim=100; let total=null, guard=0;
+  while(guard++<200){
+    const res=await call(SEARCH,{objectType:"CONTACT",filterGroups:killGroups(creator),properties:props,sorts:[{propertyName:"num_contacted_notes",direction:"ASCENDING"}],limit:lim,offset:offset});
+    const p=deepParse(res); const rows=deepFindArrayWithKey(p,"id")||[];
+    if(total==null) total=deepFindNumber(p,"total")||rows.length;
+    rows.forEach(r=>{ const x=r.properties||{}; out.push({id:String(r.id),creator,
+      name:x.hs_full_name_or_email||String(r.id), stage:x.contact_engagement_stage||"",
+      owner:x.hubspot_owner_id||"", touch:(x.num_contacted_notes==null||x.num_contacted_notes==="")?0:(+x.num_contacted_notes||0),
+      outcome:x.call_outcome||"", lastCall:x.last_call_date_and_time?x.last_call_date_and_time.slice(0,10):"",
+      fu:x.follow_up_date_and_time?"Yes":"", ask:(x.tm_query||"").trim(), created:x.createdate?x.createdate.slice(0,10):"" }); });
+    if(onProg) onProg(out.length,total);
+    if(rows.length<lim) break; offset+=rows.length; if(out.length>=total) break;
+  }
+  return out;
+}
+async function resolveNames(){
+  const ids=[...new Set(DATA.map(d=>d.owner).filter(x=>/^\d+$/.test(x)))].map(Number);
+  if(!ids.length) return;
+  try{ const res=await call(OWN,{ownerIds:ids,limit:200}); const arr=deepFindArrayWithKey(deepParse(res),"ownerId")||[];
+    arr.forEach(o=>{ NAMES[String(o.ownerId)]=o.name+(o.isActive===false?" (inactive)":""); }); }catch(e){}
+}
+const ownerName=id=>!id?"— unowned":(NAMES[id]||OWNER_FALLBACK[id]||("Owner "+id));
+async function load(){
+  if(typeof window.cowork==="undefined"||!window.cowork.callMcpTool){ document.getElementById("status").textContent="Run inside Cowork (no data bridge)."; return; }
+  const sel=document.getElementById("creator").value; const targets= sel==="__ALL__"?CREATORS:[sel];
+  DATA=[]; NAMES={}; setProg(0);
+  document.getElementById("status").textContent="Loading "+(sel==="__ALL__"?"all 6 creators":sel)+" …";
+  for(let i=0;i<targets.length;i++){
+    const part=await fetchCreator(targets[i],(n,t)=>{ document.getElementById("status").textContent=`Loading ${targets[i]} — ${n}${t?(" / "+t):""}${targets.length>1?` (creator ${i+1}/${targets.length})`:""}…`; });
+    DATA=DATA.concat(part);
+  }
+  await resolveNames(); populateReps();
+  document.getElementById("status").textContent=`Loaded ${DATA.length.toLocaleString()} kill contacts · ${sel==="__ALL__"?"all 6 creators":sel} · live from HubSpot`;
+  render();
+}
+function populateReps(){
+  const sel=document.getElementById("fRep"); const cur=sel.value;
+  const ids=[...new Set(DATA.map(d=>d.owner))];
+  const opts=ids.map(id=>({id,name:ownerName(id),n:DATA.filter(d=>d.owner===id).length})).sort((a,b)=>b.n-a.n);
+  sel.innerHTML='<option value="">All reps</option>'+opts.map(o=>`<option value="${o.id}">${o.name} (${o.n})</option>`).join("");
+  if(opts.some(o=>o.id===cur)) sel.value=cur;
+}
+function filtered(){
+  const st=document.getElementById("fStage").value, rp=document.getElementById("fRep").value, vd=document.getElementById("fVerdict").value, q=document.getElementById("fSearch").value.toLowerCase().trim();
+  return DATA.filter(d=>{
+    if(st && d.stage!==st) return false;
+    if(rp!=="" && d.owner!==rp) return false;
+    if(q && !d.name.toLowerCase().includes(q)) return false;
+    const v=(DEC[d.id]||{}).verdict||"";
+    if(vd==="__none__" && v) return false;
+    if(vd==="real" && v!=="real") return false;
+    if(vd==="forced" && v!=="forced") return false;
+    return true;
+  });
+}
+function setProg(pct){ document.getElementById("progbar").style.width=pct+"%"; }
+function touchCls(t){ return t<=1?"bad":t<3?"amber":"good"; }
+function render(){
+  const rows=filtered();
+  let real=0,forced=0; DATA.forEach(d=>{ const v=(DEC[d.id]||{}).verdict; if(v==="real")real++; else if(v==="forced")forced++; });
+  const audited=real+forced, tot=DATA.length, rem=tot-audited;
+  document.getElementById("stat").innerHTML=[["",tot,"In view (loaded)"],["",rows.length,"Matching filters"],["real",real,"Real No"],["forced",forced,"Forced No"],["rem",rem,"Remaining"]]
+    .map(c=>`<div class="chip ${c[0]}"><div class="n">${(c[1]||0).toLocaleString()}</div><div class="l">${c[2]}</div></div>`).join("");
+  setProg(tot?Math.round(audited/tot*100):0);
+  const cap=800; const show=rows.slice(0,cap);
+  document.querySelector("#tbl thead").innerHTML=`<tr><th class="l">Contact</th><th>Stage</th><th class="l">Owner</th><th>⌀touch</th><th>Last call</th><th>Call outcome</th><th>FU?</th><th class="l">Their ask</th><th>Created</th><th>Open</th><th>Verdict</th><th class="l">Reason</th></tr>`;
+  const tb=document.querySelector("#tbl tbody");
+  if(!show.length){ tb.innerHTML=`<tr><td colspan="12" class="empty">No contacts match the current filters.</td></tr>`; return; }
+  let h="";
+  show.forEach(d=>{ const dec=DEC[d.id]||{}; const v=dec.verdict||""; const rowCls=v==="real"?"verdict-real":v==="forced"?"verdict-forced":"";
+    h+=`<tr data-id="${d.id}" class="${rowCls}">`+
+      `<td class="name" title="${esc(d.name)}">${esc(d.name)}</td>`+
+      `<td><span class="badge ${STAGE_CLS[d.stage]||""}">${STAGE_SHORT[d.stage]||d.stage}</span></td>`+
+      `<td class="l">${esc(ownerName(d.owner))}</td>`+
+      `<td class="touch ${touchCls(d.touch)}">${d.touch}</td>`+
+      `<td>${d.lastCall||"—"}</td><td>${esc(d.outcome||"—")}</td><td>${d.fu||"—"}</td>`+
+      `<td class="ask" title="${esc(d.ask)}">${esc(d.ask.slice(0,120))||"—"}</td>`+
+      `<td>${d.created||"—"}</td><td><a class="open" href="${HUB}${d.id}" target="_blank">Open ↗</a></td>`+
+      `<td><span class="vbtns"><button class="vb-real ${v==="real"?"on":""}" data-v="real">Real</button><button class="vb-forced ${v==="forced"?"on":""}" data-v="forced">Forced</button></span></td>`+
+      `<td class="l"><input class="reason" type="text" placeholder="reason…" value="${esc(dec.reason||"")}"></td></tr>`; });
+  if(rows.length>cap) h+=`<tr><td colspan="12" class="empty">Showing first ${cap} of ${rows.length.toLocaleString()} — narrow with the slicers to reach the rest.</td></tr>`;
+  tb.innerHTML=h;
+}
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+function setVerdict(id,v){
+  const d=DATA.find(x=>x.id===id); if(!d) return; const cur=DEC[id]||{};
+  if(cur.verdict===v){ delete cur.verdict; } else { cur.verdict=v; }
+  cur.creator=d.creator; cur.stage=d.stage; cur.owner=ownerName(d.owner); cur.name=d.name; cur.touch=d.touch; cur.lastCall=d.lastCall; cur.ts=new Date().toISOString();
+  DEC[id]=cur; saveDec(); render();
+}
+document.querySelector("#tbl tbody").addEventListener("click",e=>{ const b=e.target.closest("button[data-v]"); if(!b) return; const tr=e.target.closest("tr"); if(!tr) return; setVerdict(tr.dataset.id,b.dataset.v); });
+document.querySelector("#tbl tbody").addEventListener("change",e=>{ if(!e.target.classList.contains("reason")) return; const tr=e.target.closest("tr"); if(!tr) return; const id=tr.dataset.id;
+  const cur=DEC[id]||{}; cur.reason=e.target.value; const d=DATA.find(x=>x.id===id);
+  if(d){ cur.creator=d.creator; cur.stage=d.stage; cur.owner=ownerName(d.owner); cur.name=d.name; cur.touch=d.touch; cur.lastCall=d.lastCall; }
+  cur.ts=new Date().toISOString(); DEC[id]=cur; saveDec(); });
+["fStage","fRep","fVerdict"].forEach(id=>document.getElementById(id).addEventListener("change",render));
+document.getElementById("fSearch").addEventListener("input",render);
+document.getElementById("creator").addEventListener("change",()=>load().catch(err=>document.getElementById("status").textContent="Error: "+(err&&err.message?err.message:err)));
+document.getElementById("reload").addEventListener("click",()=>load().catch(err=>document.getElementById("status").textContent="Error: "+(err&&err.message?err.message:err)));
+document.getElementById("export").addEventListener("click",()=>{
+  const cols=["contact_id","name","creator","stage","owner","touches","last_call","verdict","reason","audited_at","hubspot_url"];
+  const lines=[cols.join(",")];
+  Object.keys(DEC).forEach(id=>{ const d=DEC[id]; if(!d.verdict) return;
+    lines.push([id,d.name||"",d.creator||"",STAGE_SHORT[d.stage]||d.stage||"",d.owner||"",d.touch==null?"":d.touch,d.lastCall||"",d.verdict==="real"?"Real No":"Forced No",d.reason||"",d.ts||"",HUB+id].map(csv).join(",")); });
+  if(lines.length===1){ alert("No verdicts marked yet."); return; }
+  const blob=new Blob([lines.join("\n")],{type:"text/csv"}); const url=URL.createObjectURL(blob);
+  const a=document.createElement("a"); a.href=url; a.download="disposition_audit_"+new Date().toISOString().slice(0,10)+".csv"; a.click(); URL.revokeObjectURL(url);
+});
+function csv(v){ v=String(v==null?"":v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+window.__auditStart=function(){ if(window.__auditStarted) return; window.__auditStarted=true; load().catch(err=>document.getElementById("status").textContent="Error: "+(err&&err.message?err.message:err)); };
+})();
+
+/* ============================= MESSAGE TOOL ============================= */
+(function(){
+const OWN="mcp__e21da083-e66f-48be-881b-fa1bcef88404__search_owners";
+const STAGES=[
+  ["first","First message","Opening message to a brand-new lead"],
+  ["postcall","Message after the call","Sent right after a call to recap & set the next step"],
+  ["dnp","DNP message","Sent when the lead didn't pick up"],
+  ["fudnp","FU-DNP message","Follow-up after repeated no-pickup"],
+  ["meeting","Meeting reminder","Reminder before a scheduled meeting"]
+];
+const STAGE_NAME=Object.fromEntries(STAGES.map(s=>[s[0],s[1]]));
+const OWNER_FALLBACK={"164903369":"Utkarsh Sonkar","164253071":"Madhaya Praveen","165087316":"Gourav Hansaria","164373377":"Abhay Kumar Gupta","164373372":"Vanshika Laheja","163983265":"Sidharth Nair","165087317":"Darshan Venkataraman","162113583":"aman kumar singh"};
+const PKEY="msgplay_v1", AKEY="msgadh_v1";
+let PLAY=load(PKEY,{}); STAGES.forEach(([k])=>{ if(!PLAY[k])PLAY[k]={current:"",replacement:"",notes:"",variants:[]}; });
+let ADH=load(AKEY,{trainingDate:"",entries:[]});
+function load(k,d){ try{ return JSON.parse(localStorage.getItem(k))||d; }catch(e){ return d; } }
+function save(k,v){ try{ localStorage.setItem(k,JSON.stringify(v)); }catch(e){} }
+const savePlay=()=>save(PKEY,PLAY), saveAdh=()=>save(AKEY,ADH);
+function esc(s){ return String(s==null?"":s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;","\"":"&quot;"}[c])); }
+function uid(){ return Date.now().toString(36)+Math.random().toString(36).slice(2,7); }
+function deepParse(v){ if(typeof v==="string"){ const t=v.trim(); if(t&&(t[0]==="{"||t[0]==="[")){ try{return deepParse(JSON.parse(v));}catch(e){return v;} } return v; } if(Array.isArray(v))return v.map(deepParse); if(v&&typeof v==="object"){const o={};for(const k in v)o[k]=deepParse(v[k]);return o;} return v; }
+function deepFindArrayWithKey(v,key){ if(v==null)return null; if(Array.isArray(v)){ if(v.length&&typeof v[0]==="object"&&v[0]&&key in v[0])return v; for(const x of v){const r=deepFindArrayWithKey(x,key);if(r)return r;}return null;} if(typeof v==="object"){for(const k in v){const r=deepFindArrayWithKey(v[k],key);if(r)return r;}} return null; }
+function renderPlay(){
+  const host=document.getElementById("stages");
+  let filled=0; STAGES.forEach(([k])=>{ if(PLAY[k].replacement.trim())filled++; });
+  document.getElementById("playStat").innerHTML=`${filled} of ${STAGES.length} stages have an approved replacement set.`;
+  host.innerHTML="";
+  STAGES.forEach(([k,name,desc])=>{
+    const p=PLAY[k]; const el=document.createElement("div"); el.className="panel stage"; el.dataset.k=k;
+    let vh=""; p.variants.forEach(v=>{ vh+=`<div class="var ${v.best?'best':''}" data-vid="${v.id}">
+      <div class="vtop"><span class="star ${v.best?'on':''}" data-act="best">★</span>
+      <input type="text" data-f="label" placeholder="variant label (e.g. V2 value-led)" value="${esc(v.label)}">
+      <button class="sm del" data-act="delvar">Delete</button></div>
+      <textarea data-f="text" placeholder="variant message text…">${esc(v.text)}</textarea>
+      <input type="text" class="vnote" data-f="note" placeholder="result / why it works (e.g. 22% reply rate)" value="${esc(v.note)}"></div>`; });
+    el.innerHTML=`<div class="stage"><h2>${esc(name)}</h2><div class="d">${esc(desc)}</div></div>
+      <div class="two">
+        <div class="fld cur"><label>Current message (in use today)</label><textarea class="cur" data-f="current" placeholder="what reps send now…">${esc(p.current)}</textarea></div>
+        <div class="fld rep"><label>Approved replacement</label><textarea class="rep" data-f="replacement" placeholder="the new best-practice message…">${esc(p.replacement)}</textarea></div>
+      </div>
+      <input type="text" class="notes" data-f="notes" placeholder="notes — why replaced, what's winning, do/don't…" value="${esc(p.notes)}">
+      <div class="varhead">A/B variants to test <span class="savedtag" data-saved>saved ✓</span></div>
+      <div data-vars>${vh}</div>
+      <button class="sm" data-act="addvar">+ Add variant</button>`;
+    host.appendChild(el);
+  });
+}
+document.getElementById("stages").addEventListener("input",e=>{
+  const card=e.target.closest(".panel"); const k=card&&card.dataset.k; if(!k)return; const f=e.target.dataset.f;
+  if(f==="current"||f==="replacement"||f==="notes"){ PLAY[k][f]=e.target.value; savePlay(); flagSaved(card); return; }
+  const varEl=e.target.closest(".var"); if(varEl&&f){ const v=PLAY[k].variants.find(x=>x.id===varEl.dataset.vid); if(v){ v[f]=e.target.value; savePlay(); flagSaved(card); } }
+});
+document.getElementById("stages").addEventListener("click",e=>{
+  const card=e.target.closest(".panel"); const k=card&&card.dataset.k; if(!k)return; const act=e.target.dataset.act;
+  if(act==="addvar"){ PLAY[k].variants.push({id:uid(),label:"",text:"",note:"",best:false}); savePlay(); renderPlay(); }
+  else if(act==="delvar"){ const v=e.target.closest(".var"); PLAY[k].variants=PLAY[k].variants.filter(x=>x.id!==v.dataset.vid); savePlay(); renderPlay(); }
+  else if(act==="best"){ const v=e.target.closest(".var"); const tgt=PLAY[k].variants.find(x=>x.id===v.dataset.vid); const turnOn=!tgt.best; PLAY[k].variants.forEach(x=>x.best=false); tgt.best=turnOn; savePlay(); renderPlay(); }
+});
+function flagSaved(card){ const t=card.querySelector("[data-saved]"); if(!t)return; t.classList.add("show"); clearTimeout(t._t); t._t=setTimeout(()=>t.classList.remove("show"),900); }
+function initAdh(){
+  document.getElementById("cStage").innerHTML=STAGES.map(s=>`<option value="${s[0]}">${esc(s[1])}</option>`).join("");
+  document.getElementById("cDate").value=new Date().toISOString().slice(0,10);
+  document.getElementById("trainDate").value=ADH.trainingDate||"";
+  document.getElementById("trainDate").addEventListener("change",e=>{ ADH.trainingDate=e.target.value; saveAdh(); renderBoard(); renderLog(); });
+}
+document.getElementById("addEntry").onclick=()=>{
+  const rep=document.getElementById("cRep").value.trim(); const msg=document.getElementById("cMsg").value.trim();
+  if(!rep){ alert("Enter a rep name."); return; }
+  ADH.entries.push({id:uid(),rep,stage:document.getElementById("cStage").value,date:document.getElementById("cDate").value,verdict:document.getElementById("cVerdict").value,msg,note:document.getElementById("cNote").value.trim()});
+  saveAdh(); document.getElementById("cMsg").value=""; document.getElementById("cNote").value=""; renderBoard(); renderLog();
+};
+const vscore={on:1,partial:.5,off:0}, vlabel={on:"On-script",partial:"Partial",off:"Off-script"};
+function isPost(d){ return ADH.trainingDate? (d>=ADH.trainingDate) : true; }
+function pctCls(p){ return p>=80?"g":p>=50?"a":"b"; }
+function renderBoard(){
+  const reps=[...new Set(ADH.entries.map(e=>e.rep))].sort(); const board=document.getElementById("board");
+  if(!reps.length){ board.innerHTML="<tbody><tr><td class='l'>No captures yet — add entries below.</td></tr></tbody>"; document.getElementById("adhStat").textContent=""; return; }
+  let h="<thead><tr><th class='l'>Rep</th>"; STAGES.forEach(s=>h+=`<th>${esc(s[1])}</th>`); h+="<th>All stages</th><th>Pre→Post</th></tr></thead><tbody>";
+  let postTot=0,postCnt=0,preTot=0,preCnt=0;
+  reps.forEach(rep=>{
+    h+=`<tr><td class='l'>${esc(rep)}</td>`; let rPostS=0,rPostN=0,rPreS=0,rPreN=0;
+    STAGES.forEach(s=>{ const es=ADH.entries.filter(e=>e.rep===rep&&e.stage===s[0]&&isPost(e.date));
+      if(es.length){ const sc=es.reduce((a,e)=>a+vscore[e.verdict],0)/es.length*100; h+=`<td class="pct ${pctCls(sc)}">${sc.toFixed(0)}%<div style="font-size:10px;color:#9aa3b6;font-weight:400">${es.length}</div></td>`; }
+      else h+=`<td style="color:#cdd5e3">·</td>`; });
+    const allPost=ADH.entries.filter(e=>e.rep===rep&&isPost(e.date)), allPre=ADH.entries.filter(e=>e.rep===rep&&!isPost(e.date));
+    allPost.forEach(e=>{rPostS+=vscore[e.verdict];rPostN++;}); allPre.forEach(e=>{rPreS+=vscore[e.verdict];rPreN++;});
+    const postPct=rPostN?rPostS/rPostN*100:null, prePct=rPreN?rPreS/rPreN*100:null;
+    h+= postPct==null?`<td style="color:#cdd5e3">·</td>`:`<td class="pct ${pctCls(postPct)}">${postPct.toFixed(0)}%</td>`;
+    let delta="·"; if(prePct!=null&&postPct!=null){ const d=postPct-prePct; delta=`${prePct.toFixed(0)}% → ${postPct.toFixed(0)}% <b style="color:${d>=0?'#1e8449':'#c0392b'}">(${d>=0?'+':''}${d.toFixed(0)})</b>`; } else if(postPct!=null) delta=`post ${postPct.toFixed(0)}%`;
+    h+=`<td class='l'>${delta}</td></tr>`; postTot+=rPostS;postCnt+=rPostN;preTot+=rPreS;preCnt+=rPreN;
+  });
+  h+="</tbody>"; board.innerHTML=h;
+  const op=postCnt?(postTot/postCnt*100):0, pp=preCnt?(preTot/preCnt*100):0;
+  document.getElementById("adhStat").innerHTML=`${ADH.entries.length} captures · team adherence post-training <b class="pct ${pctCls(op)}">${op.toFixed(0)}%</b>${preCnt?` · pre-training ${pp.toFixed(0)}% · <b style="color:${op-pp>=0?'#1e8449':'#c0392b'}">${op-pp>=0?'+':''}${(op-pp).toFixed(0)} pts</b>`:""}${ADH.trainingDate?` · training ${ADH.trainingDate}`:" · set a training date to split pre/post"}`;
+}
+function renderLog(){
+  const log=document.getElementById("log"); const es=[...ADH.entries].sort((a,b)=>(b.date||"").localeCompare(a.date||""));
+  let h="<thead><tr><th>Date</th><th class='l'>Rep</th><th>Stage</th><th>Adherence</th><th>Phase</th><th class='l'>Message</th><th class='l'>Note</th><th></th></tr></thead><tbody>";
+  if(!es.length) h+="<tr><td colspan='8' class='l'>No captures logged yet.</td></tr>";
+  es.forEach(e=>{ h+=`<tr><td>${esc(e.date||"—")}</td><td class='l'>${esc(e.rep)}</td><td>${esc(STAGE_NAME[e.stage]||e.stage)}</td>`+
+    `<td class="v-${e.verdict}">${vlabel[e.verdict]}</td><td>${isPost(e.date)?"post":"pre"}</td>`+
+    `<td class="msgcell">${esc((e.msg||"").slice(0,160))}</td><td class='l' style="max-width:160px;white-space:normal">${esc(e.note||"")}</td>`+
+    `<td><button class="sm del" data-del="${e.id}">✕</button></td></tr>`; });
+  h+="</tbody>"; log.innerHTML=h;
+}
+document.getElementById("log").addEventListener("click",e=>{ const id=e.target.dataset.del; if(!id)return; ADH.entries=ADH.entries.filter(x=>x.id!==id); saveAdh(); renderBoard(); renderLog(); });
+function csv(v){ v=String(v==null?"":v); return /[",\n]/.test(v)?'"'+v.replace(/"/g,'""')+'"':v; }
+function download(name,lines){ const b=new Blob([lines.join("\n")],{type:"text/csv"}); const u=URL.createObjectURL(b); const a=document.createElement("a"); a.href=u; a.download=name; a.click(); URL.revokeObjectURL(u); }
+document.getElementById("exportPlay").onclick=()=>{
+  const out2=[["stage","type","label","message","note","best"].join(",")];
+  STAGES.forEach(([k,name])=>{ const p=PLAY[k];
+    out2.push([name,"current","",p.current,p.notes,""].map(csv).join(","));
+    out2.push([name,"replacement","",p.replacement,"",""].map(csv).join(","));
+    p.variants.forEach(v=>out2.push([name,"variant",v.label,v.text,v.note,v.best?"YES":""].map(csv).join(","))); });
+  download("message_playbook_"+new Date().toISOString().slice(0,10)+".csv",out2);
+};
+document.getElementById("exportAdh").onclick=()=>{
+  if(!ADH.entries.length){ alert("No captures to export."); return; }
+  const out=[["date","rep","stage","adherence","phase","message","note"].join(",")];
+  ADH.entries.forEach(e=>out.push([e.date,e.rep,STAGE_NAME[e.stage]||e.stage,vlabel[e.verdict],isPost(e.date)?"post":"pre",e.msg,e.note].map(csv).join(",")));
+  download("message_adherence_"+new Date().toISOString().slice(0,10)+".csv",out);
+};
+async function loadReps(){
+  const set=new Set(Object.values(OWNER_FALLBACK));
+  if(typeof window.cowork!=="undefined"&&window.cowork.callMcpTool){
+    try{ let offset=0,guard=0;
+      while(guard++<10){ const res=await window.cowork.callMcpTool(OWN,{limit:200,offset}); const p=deepParse(res);
+        const arr=deepFindArrayWithKey(p,"ownerId")||[]; arr.forEach(o=>{ if(o.isActive!==false&&o.name)set.add(o.name); });
+        const more=JSON.stringify(p).includes('"hasMore":true'); const noff=(p&&p.offset)||(arr.length?offset+arr.length:0);
+        if(!more||!arr.length||noff<=offset)break; offset=noff; } }catch(e){}
+  }
+  document.getElementById("repList").innerHTML=[...set].sort().map(n=>`<option value="${esc(n)}">`).join("");
+}
+window.__adhRefresh=function(){ renderBoard(); renderLog(); };
+renderPlay(); initAdh(); renderBoard(); renderLog(); loadReps();
+})();
+
+/* ============================= TOP TAB CONTROLLER ============================= */
+(function(){
+  const TV=["auditView","playView","adhView"];
+  function show(v){ TV.forEach(id=>document.getElementById(id).classList.toggle("hidden",id!==v));
+    document.querySelectorAll(".toptabs button").forEach(b=>b.classList.toggle("on",b.dataset.view===v));
+    if(v==="auditView" && window.__auditStart) window.__auditStart();
+    if(v==="adhView" && window.__adhRefresh) window.__adhRefresh();
+  }
+  document.querySelectorAll(".toptabs button").forEach(b=>b.onclick=()=>show(b.dataset.view));
+  show("auditView");
+})();
+</script>
+</body>
+</html>
