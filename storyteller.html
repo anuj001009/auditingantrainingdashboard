@@ -104,9 +104,49 @@ h1{font-size:23px;margin:0;letter-spacing:-.3px}
 .favrow .cc{font-size:11.5px;color:var(--muted)}
 .favempty{padding:16px;text-align:center;color:var(--muted);font-size:13.5px}
 
+/* Section heading */
+.sec-h{display:flex;align-items:center;gap:9px;margin:34px 2px 12px;font-size:16px;font-weight:800;letter-spacing:-.2px}
+.sec-h .tiny{font-size:12px;font-weight:600;color:var(--muted);margin-left:auto}
+
+/* Journal */
+.jcard{padding:6px 6px 14px}
+.jtop{display:flex;align-items:center;justify-content:space-between;padding:12px 14px 6px;gap:10px;flex-wrap:wrap}
+.jnav{display:flex;align-items:center;gap:6px}
+.jnav button{width:32px;height:32px;border-radius:9px;border:1px solid var(--line);background:#fff;cursor:pointer;font-size:16px;color:var(--muted);line-height:1}
+.jnav button:hover{border-color:var(--accent);color:var(--accent)}
+.jnav .jd{font-size:13px;font-weight:700;min-width:150px;text-align:center;color:var(--ink)}
+.jsaved{font-size:12px;font-weight:700;color:#12805e;opacity:0;transition:.3s}
+.jsaved.show{opacity:1}
+.jsec{padding:10px 14px 4px}
+.jsec label{display:block;font-size:13.5px;font-weight:800;margin-bottom:7px}
+.jsec.am label{color:#c9691a}.jsec.pm label{color:#5b53c9}
+.jsec textarea{width:100%;min-height:88px;resize:vertical;border:1px solid var(--line);border-radius:12px;
+  padding:11px 13px;font:inherit;font-size:14.5px;line-height:1.5;background:#fffdfa;color:var(--ink)}
+.jsec.am textarea:focus{outline:none;border-color:var(--accent2);box-shadow:0 0 0 3px rgba(242,160,61,.14)}
+.jsec.pm textarea:focus{outline:none;border-color:#8a5cd0;box-shadow:0 0 0 3px rgba(138,92,208,.14)}
+
+/* Up next / reading list */
+.rcard{padding:6px 8px 12px}
+.radd{display:flex;gap:8px;padding:12px 10px 8px}
+.radd input{flex:1;border:1px solid var(--line);border-radius:12px;padding:11px 13px;font:inherit;font-size:14.5px;background:#fffdfa}
+.radd input:focus{outline:none;border-color:var(--geo);box-shadow:0 0 0 3px rgba(31,157,118,.14)}
+.radd button{border:none;background:linear-gradient(135deg,var(--geo),#4fc79c);color:#fff;font-weight:800;
+  border-radius:12px;padding:0 18px;cursor:pointer;font-size:14.5px}
+.radd button:active{transform:translateY(1px)}
+.rrow{display:flex;align-items:center;gap:11px;padding:10px 12px;border-radius:11px;margin:2px 4px}
+.rrow:hover{background:#f7fbf9}
+.rbox{width:21px;height:21px;border-radius:6px;border:2px solid #cdddd6;cursor:pointer;flex:none;display:grid;place-items:center;font-size:13px;color:#fff}
+.rbox.on{background:var(--geo);border-color:var(--geo)}
+.rtext{flex:1;font-size:14.5px}
+.rrow.done .rtext{text-decoration:line-through;color:var(--muted)}
+.rdel{border:none;background:none;color:#c9b6a6;cursor:pointer;font-size:17px;padding:2px 6px;border-radius:6px}
+.rdel:hover{color:var(--accent);background:#fff0e9}
+.rempty{padding:14px 12px;text-align:center;color:var(--muted);font-size:13.5px}
+
 @media(max-width:520px){
   .hero h2{font-size:23px}.hero .emoji{font-size:32px}
   .wrap{padding:22px 14px 60px}
+  .jnav .jd{min-width:110px}
 }
 </style></head>
 <body><div class="wrap">
@@ -165,6 +205,37 @@ h1{font-size:23px;margin:0;letter-spacing:-.3px}
 
   <button class="btn ghost" id="favToggle" style="width:100%;margin-top:12px">⭐ My saved stories (<span id="favCount">0</span>)</button>
   <div class="favlist" id="favList"></div>
+
+  <!-- Daily Journal -->
+  <div class="sec-h">📔 Daily Journal <span class="tiny">auto-saved on this device</span></div>
+  <div class="card jcard">
+    <div class="jtop">
+      <div class="jnav">
+        <button id="jPrev" title="Previous day">‹</button>
+        <span class="jd" id="jDate">Today</span>
+        <button id="jNext" title="Next day">›</button>
+      </div>
+      <span class="jsaved" id="jSaved">Saved ✓</span>
+    </div>
+    <div class="jsec am">
+      <label>☀️ Morning planning — set the tone for the day</label>
+      <textarea id="amNote" placeholder="Top 3 priorities · one thing I'm excited about · how I want to feel today · a small win I'll aim for..."></textarea>
+    </div>
+    <div class="jsec pm">
+      <label>🌙 Night dump — empty your head before sleep</label>
+      <textarea id="pmNote" placeholder="What happened today · wins &amp; gratitude · what's on my mind · worries to park until tomorrow · one thing I learned..."></textarea>
+    </div>
+  </div>
+
+  <!-- Up Next / reading list -->
+  <div class="sec-h">📚 Up Next <span class="tiny">what I want to read &amp; explore</span></div>
+  <div class="card rcard">
+    <div class="radd">
+      <input id="rInput" placeholder="A topic, person, place or story idea..." maxlength="140">
+      <button id="rAdd">Add</button>
+    </div>
+    <div id="rList"></div>
+  </div>
 
   <div class="meta">
     A fresh story every day — motivation, wonder, history &amp; the wide wild world.<br>
@@ -490,7 +561,247 @@ const STORIES = [
    ],
    pull:"The air in your lungs right now has travelled the whole Earth — and touched almost everyone who ever lived.",
    spark:"That same restless mixing is why a volcano on one side of the planet can paint sunsets red on the other.",
-   takeaway:"You're more connected to the rest of humanity than you feel. Breathe — you're part of one enormous, ancient whole."}
+   takeaway:"You're more connected to the rest of humanity than you feel. Breathe — you're part of one enormous, ancient whole."},
+
+  {cat:"people",emoji:"⛰️",title:"The man who carved a road through a mountain",who:"Dashrath Manjhi · India",
+   body:[
+     "In a poor village in Bihar, India, a huge rocky mountain forced everyone to walk 55 km around it just to reach the nearest town, doctor, or school. When Dashrath Manjhi's wife died — partly because help was too far to reach in time — his grief turned into something unstoppable.",
+     "With only a hammer, a chisel and a crowbar, he began to break the mountain apart. Alone. People called him mad. He kept swinging, day after day, for <b>22 years.</b>",
+     "In the end, he had carved a path 110 metres long and 9 metres wide straight through the rock — cutting that 55 km journey down to just 15 km. The 'Mountain Man' had moved a mountain with his bare hands."
+   ],
+   pull:"\"When I started, people called me a fool. When I finished, they called me a hero.\"",
+   spark:"He asked for nothing in return — only that his village finally have a road. Today it bears his name.",
+   takeaway:"Grief can become a chisel. Chip at the mountain a little every day, and even rock gives way."},
+
+  {cat:"people",emoji:"🔢",title:"The clerk who dreamed in numbers",who:"Srinivasa Ramanujan · India",
+   body:[
+     "Srinivasa Ramanujan grew up poor in southern India with almost no formal training in mathematics. He worked as a lowly shipping clerk — but in his spare hours he filled notebooks with staggeringly original formulas, saying a goddess whispered them to him in dreams.",
+     "In 1913 he mailed his wild, unproven results to the famous Cambridge professor G. H. Hardy. Hardy first thought it was a hoax — the mathematics was too strange, too advanced. Then he realised: this self-taught clerk was a once-in-a-century genius.",
+     "In a tragically short life, Ramanujan produced nearly <b>3,900 results</b>, some so far ahead of their time that mathematicians are still unlocking them a century later — using them today in string theory and black-hole physics."
+   ],
+   pull:"\"An equation for me has no meaning unless it expresses a thought of God.\"",
+   spark:"The 'boring' number 1729 became famous forever when Ramanujan instantly saw it was the smallest number expressible as the sum of two cubes in two different ways.",
+   takeaway:"Genius doesn't wait for permission or a fancy address. Trust the ideas that arrive when no one's watching."},
+
+  {cat:"people",emoji:"🚀",title:"The dream that reached the stars",who:"Dr APJ Abdul Kalam · India",
+   body:[
+     "He was born in a small town in Tamil Nadu and sold newspapers as a boy to help his family. He dreamed of flying — and though he narrowly missed becoming an air force pilot, he refused to let the dream die. He simply changed how he'd reach the sky.",
+     "APJ Abdul Kalam became one of India's greatest scientists, leading its satellite-launch and missile programs, earning the affectionate title \"Missile Man.\" In 2002 the boy who sold newspapers became the <b>President of India.</b>",
+     "Yet what he loved most was teaching. He spent his final moments doing exactly that — collapsing while giving a lecture to students, urging them, as always, to dream."
+   ],
+   pull:"\"Dream, dream, dream. Dreams transform into thoughts, and thoughts result in action.\"",
+   spark:"He asked to be remembered not as a president or a scientist, but simply as a teacher.",
+   takeaway:"Where you start does not decide where you land. Aim high, keep your feet moving, and lift others as you climb."},
+
+  {cat:"people",emoji:"🏔️",title:"She climbed Everest without a leg",who:"Arunima Sinha · India",
+   body:[
+     "Arunima Sinha was a national-level volleyball player when, in 2011, robbers threw her from a moving train. She survived — but lost a leg, and lay in a hospital bed with a prosthetic and a shattered future.",
+     "Lying there, she made a decision that stunned everyone: she would climb Mount Everest. Doctors, family, logic — all said no. She trained relentlessly on her prosthetic leg anyway.",
+     "In 2013, Arunima Sinha became the <b>world's first female amputee to summit Everest.</b> She didn't stop there — she went on to climb the highest peak on every continent."
+   ],
+   pull:"\"I wanted to prove that nothing can stop you — not even losing a part of your own body.\"",
+   spark:"Near the summit she was warned she might die; her oxygen was running low. She kept climbing.",
+   takeaway:"What you lose does not define your ceiling. Sometimes the setback is the launchpad."},
+
+  {cat:"people",emoji:"🏃‍♂️",title:"The Flying Sikh who outran his past",who:"Milkha Singh · India",
+   body:[
+     "As a child, Milkha Singh lost his parents in the violence of India's Partition and fled for his life across the border, alone and orphaned. He grew up in refugee camps, sometimes stealing to survive.",
+     "Then he discovered he could run — really run. He ran to escape his memories, and kept running until he became one of the greatest sprinters Asia has ever seen, dazzling crowds around the world. Even a rival crowd in Pakistan was so awed they nicknamed him <b>\"The Flying Sikh.\"</b>",
+     "He turned a childhood of loss into a lifetime of flight, and inspired generations of Indian athletes to believe they belonged on the world stage."
+   ],
+   pull:"\"The pain of the past became the fuel. I ran, and I never looked back.\"",
+   spark:"He famously ran while picturing the horrors he'd fled — turning his darkest memory into pure speed.",
+   takeaway:"Your hardest history can become your greatest engine. Run forward with it, not away from it."},
+
+  {cat:"people",emoji:"🌌",title:"The girl from Karnal who touched space",who:"Kalpana Chawla · India",
+   body:[
+     "In the small Indian town of Karnal, a girl named Kalpana Chawla used to lie on the rooftop at night, staring at the stars and sketching aeroplanes. People asked what a small-town girl could possibly do with dreams that big.",
+     "She studied aeronautical engineering when few women did, moved across the world, and in 1997 became the <b>first woman of Indian origin to fly to space.</b> Orbiting the Earth, she looked down at the whole planet — no borders, just home.",
+     "She died in the Columbia tragedy in 2003, but her flight lit a fire in millions of children who realised the stars were not off-limits to them either."
+   ],
+   pull:"\"The path from dreams to success does exist. Have the vision to find it, and the courage to get on it.\"",
+   spark:"A ridge of mountains on Mars and a satellite now carry her name — the rooftop dreamer, written into the sky forever.",
+   takeaway:"No town is too small to launch a life that reaches orbit. Keep looking up."},
+
+  {cat:"people",emoji:"🕊️",title:"27 years, and not a drop of hatred",who:"Nelson Mandela · South Africa",
+   body:[
+     "Nelson Mandela spent <b>27 years in prison</b> for fighting apartheid — much of it breaking rocks in a limestone quarry, the glare slowly damaging his eyes. Almost anyone would have emerged bitter, hungry for revenge.",
+     "He walked out in 1990 choosing the opposite. He reached for reconciliation, inviting his former jailers to his inauguration and sitting down with the very people who had imprisoned him. In 1994 he became South Africa's first democratically elected president.",
+     "He chose forgiveness not because it was easy, but because he knew hatred is a prison you build for yourself."
+   ],
+   pull:"\"As I walked out, I knew that if I didn't leave my bitterness behind, I'd still be in prison.\"",
+   spark:"He kept a poem, 'Invictus', close during his darkest years: \"I am the master of my fate, I am the captain of my soul.\"",
+   takeaway:"Forgiveness isn't weakness — it's the strongest, freest choice a person can make."},
+
+  {cat:"people",emoji:"🤟",title:"The teacher who opened a silent world",who:"Helen Keller & Anne Sullivan",
+   body:[
+     "An illness left Helen Keller both blind and deaf before she was two. Locked in a world without sight or sound, she grew wild and frustrated, unable to reach anyone — until a determined young teacher named Anne Sullivan arrived.",
+     "Anne spelled words into Helen's palm again and again. The breakthrough came at a water pump: as cool water ran over one hand, Anne spelled W-A-T-E-R into the other. Suddenly Helen understood — <b>everything had a name.</b>",
+     "That single spark unlocked a mind. Helen Keller went on to graduate from college, write books, and champion the rights of disabled people around the world."
+   ],
+   pull:"\"Alone we can do so little; together we can do so much.\" — Helen Keller",
+   spark:"Anne Sullivan was herself nearly blind as a child — she taught Helen partly because she understood the darkness firsthand.",
+   takeaway:"The right person, patient enough to keep spelling into your palm, can open a whole world. Be that person for someone."},
+
+  {cat:"people",emoji:"⚗️",title:"The only person to win Nobels in two sciences",who:"Marie Curie",
+   body:[
+     "Marie Curie wasn't allowed to attend university in her native Poland, so she studied in secret, then moved to Paris and enrolled with barely enough money to eat, sometimes fainting from hunger over her books.",
+     "Working in a leaky shed, she discovered two new elements and coined the word \"radioactivity.\" She won a Nobel Prize in Physics — then, years later, a second one in Chemistry. She remains the only person ever to win Nobel Prizes in <b>two different sciences.</b>",
+     "She gave away her methods freely, refusing to patent her discoveries so they could help all of humanity, especially the wounded soldiers she drove to the front lines in mobile X-ray units she invented."
+   ],
+   pull:"\"Nothing in life is to be feared, it is only to be understood.\"",
+   spark:"Her notebooks are still so radioactive that they're kept in lead-lined boxes — and you must sign a waiver to read them.",
+   takeaway:"Barriers thrown in your path can't stop a mind on fire. Study in the shed if you must — and then change the world."},
+
+  {cat:"people",emoji:"🐒",title:"The girl who lived among the chimps",who:"Jane Goodall",
+   body:[
+     "In 1960, a young woman with no scientific degree walked into a Tanzanian forest to study wild chimpanzees. Experts scoffed. But Jane Goodall did something no scientist had: she sat quietly, patiently, day after day, until the chimps accepted her.",
+     "She watched a chimp strip a twig and use it to fish termites from a mound — proving animals make and use tools, something everyone believed only humans could do. It rewrote our understanding of what it means to be human.",
+     "Now in her 90s, she still travels the world some 300 days a year, telling audiences that <b>every single person makes a difference every single day.</b>"
+   ],
+   pull:"\"What you do makes a difference, and you have to decide what kind of difference you want to make.\"",
+   spark:"She gave the chimps names, not numbers — David Greybeard, Flo, Fifi — insisting they had personalities and feelings.",
+   takeaway:"Patience and genuine curiosity can teach you what expertise alone never could. Sit still and truly watch."},
+
+  {cat:"people",emoji:"🎨",title:"She painted her whole world from bed",who:"Frida Kahlo · Mexico",
+   body:[
+     "At 18, Frida Kahlo was in a horrific bus accident that shattered her spine and left her in pain for the rest of her life. Bedridden for months, encased in a plaster cast, she could easily have given up.",
+     "Instead, her parents rigged a mirror above her bed and an easel she could reach lying down. With her own reflection as her only model, she began to paint — turning her pain, her body, and her fierce imagination into some of the most striking art of the 20th century.",
+     "\"I paint myself,\" she said, \"because I am so often alone, and because I am the subject I know best.\" Her honesty made her immortal."
+   ],
+   pull:"\"Feet, what do I need you for when I have wings to fly?\"",
+   spark:"Of her ~150 paintings, around a third are self-portraits — a whole universe found in one mirror.",
+   takeaway:"When the world shrinks to a single room, you can still make something that fills the whole world. Create from where you are."},
+
+  {cat:"people",emoji:"🏔️",title:"The first woman on top of the world",who:"Junko Tabei · Japan",
+   body:[
+     "In 1970s Japan, women were told to stay home. Junko Tabei was told mountaineering was for men, that she should be raising children instead. She organised an all-women expedition anyway, scraping together funds by giving piano lessons and sewing her own gear from curtains.",
+     "High on Everest, an avalanche buried her camp. She was knocked unconscious and dug out by her guide. Battered, she kept climbing — and twelve days later, in 1975, became the <b>first woman ever to stand on the summit of Everest.</b>",
+     "She went on to become the first woman to climb the highest peak on all seven continents, and spent her later years protecting the mountains she loved."
+   ],
+   pull:"\"Technique and ability alone do not get you to the top — it is the willpower that counts.\"",
+   spark:"She stood barely 1.5 metres tall — and looked up at people who said a small woman could never do it, then did it first.",
+   takeaway:"Let them underestimate you. Sew your own gear if you have to, and climb right past the doubt."},
+
+  {cat:"history",emoji:"🌑",title:"A successful failure in space",who:"Apollo 13 · 1970",
+   body:[
+     "Two hundred thousand miles from Earth, an oxygen tank exploded aboard Apollo 13. Three astronauts were suddenly stranded in a crippled spacecraft, losing air, power, and heat, with the Moon landing abandoned and survival itself in doubt. \"Houston, we've had a problem.\"",
+     "What happened next is one of humanity's finest hours. Engineers on the ground worked around the clock, inventing fixes with only the exact junk the astronauts had aboard — famously jury-rigging an air filter from a sock, a plastic bag, and duct tape.",
+     "Freezing and exhausted, the crew looped around the Moon and steered home by hand. Against staggering odds, <b>all three splashed down alive.</b> The mission failed its goal — and became a triumph of teamwork and ingenuity."
+   ],
+   pull:"\"Failure is not an option.\" — the spirit of Mission Control that week",
+   spark:"To save power they shut nearly everything off; the cabin dropped near freezing and water condensed on the walls — yet they kept solving problems.",
+   takeaway:"When the plan explodes, the goal changes to 'get everyone home.' Calm heads and teamwork can rescue almost anything."},
+
+  {cat:"history",emoji:"🏔️",title:"The lost city in the clouds",who:"Machu Picchu · Peru",
+   body:[
+     "High on a ridge in the Andes, wrapped in mist 2,400 metres up, sits a breathtaking stone city the Inca built around 1450 — then quietly abandoned. For centuries the jungle swallowed it, and the outside world forgot it ever existed.",
+     "In 1911, a local farm boy led explorer Hiram Bingham up the mountain to the ruins. What they found was astonishing: temples, terraces and homes fitted from stones so precise that <b>not even a knife blade can slip between them</b> — all built without iron tools, wheels, or mortar.",
+     "How the Inca hauled these giant stones up a mountain, and why they left, remains a beautiful mystery to this day."
+   ],
+   pull:"A whole city, hidden in the clouds, waiting five hundred years to be remembered.",
+   spark:"The Inca had no written language and no wheels — yet engineered earthquake-proof walls that still stand perfectly today.",
+   takeaway:"Some of the most extraordinary things are hidden in plain sight, just waiting for someone to climb up and look."},
+
+  {cat:"history",emoji:"📚",title:"The machine that gave everyone a voice",who:"Gutenberg's Printing Press · 1440s",
+   body:[
+     "For most of history, books were copied by hand — a single Bible could take a scribe years, and only the very rich or powerful could own one. Knowledge was a locked treasure.",
+     "Then a German goldsmith named Johannes Gutenberg combined movable metal type with a wine press and a special ink, and suddenly a page could be printed in minutes instead of copied over months. Within 50 years, Europe went from a few thousand hand-copied books to <b>millions of printed ones.</b>",
+     "Ordinary people learned to read. Ideas spread like wildfire. It's hard to name any invention that did more to wake up the world."
+   ],
+   pull:"When you make knowledge cheap and easy to share, you change everything that comes after.",
+   spark:"Historians often rank it the single most important invention of the last thousand years — the ancestor of every newspaper, book and, eventually, the internet.",
+   takeaway:"Share what you know as widely as you can. Democratised knowledge is the seed of every revolution worth having."},
+
+  {cat:"history",emoji:"0️⃣",title:"The number that was nothing — and everything",who:"The Invention of Zero · India",
+   body:[
+     "For thousands of years, the greatest civilisations counted without a symbol for 'nothing.' It seems obvious now, but writing down emptiness as a number was a breathtaking leap of imagination.",
+     "In India, around the 7th century, a mathematician named Brahmagupta became the first to treat zero as a real number with its own rules — what happens when you add it, subtract it, multiply by it. A little dot in ancient manuscripts grew into the '0' we use today.",
+     "That single idea travelled the world and made modern mathematics possible. Without zero there is no algebra, no calculus, no computer code — <b>every screen you own runs on ones and zeros.</b>"
+   ],
+   pull:"It took genius to look at nothing and decide it was worth a number.",
+   spark:"The word 'zero' traces back through Arabic 'sifr' (empty) — the same root that also gives us the word 'cipher'.",
+   takeaway:"Sometimes the most powerful idea is the one everyone else overlooked because it looked like nothing at all."},
+
+  {cat:"geography",emoji:"🌌",title:"The sky that dances in colour",who:"The Northern Lights · Aurora",
+   body:[
+     "Near the top and bottom of our planet, on cold clear nights, the sky comes alive — great curtains of green, pink and violet light rippling silently overhead like something out of a dream.",
+     "The show is powered by the Sun. Storms on its surface fling streams of tiny particles millions of kilometres across space. When they slam into Earth's magnetic field and crash into the air high above, the gases <b>glow like a giant neon sign</b> — green from oxygen, red and purple from nitrogen.",
+     "People have watched in awe for thousands of years, weaving the lights into their myths as spirits, dragons, and dancing ancestors."
+   ],
+   pull:"The most beautiful lights on Earth are made by the Sun, painting our sky from 150 million kilometres away.",
+   spark:"The same phenomenon happens on other planets — Jupiter and Saturn have their own spectacular auroras, far bigger than ours.",
+   takeaway:"Even from unimaginable distance, one source of energy can light up your whole sky. Look up more often."},
+
+  {cat:"geography",emoji:"🌋",title:"The hottest, strangest place on Earth",who:"The Danakil Depression · Ethiopia",
+   body:[
+     "In the Afar region of Ethiopia lies a landscape so extreme it's used to study what life might look like on other planets. The Danakil Depression is one of the <b>hottest inhabited places on Earth</b>, with average temperatures soaring and rain almost never falling.",
+     "It's a riot of unearthly colour: neon-yellow and electric-green sulphur springs, bubbling acid pools, vast salt flats, and lava lakes glowing red in ancient volcanoes. It looks less like Earth and more like a painting of an alien world.",
+     "And yet — even here, hardy microbes thrive in the boiling, acidic pools, quietly proving that life clings on in the most punishing corners of our planet."
+   ],
+   pull:"A place so harsh scientists use it to imagine alien life — and life shows up anyway.",
+   spark:"For centuries, brave caravans have crossed it to hand-cut blocks of salt, hauling them out by camel exactly as their ancestors did.",
+   takeaway:"The most extreme conditions can produce the most extraordinary beauty. Harsh doesn't mean lifeless."},
+
+  {cat:"geography",emoji:"🧊",title:"The land of fire and ice",who:"Iceland",
+   body:[
+     "Iceland sits right where two of Earth's great tectonic plates are slowly pulling apart, which makes it one of the most geologically alive places on the planet. It is a land of glorious contradiction: glaciers and volcanoes, side by side.",
+     "You can hike across a glacier in the morning and watch a volcano glow at night. Waterfalls thunder off green cliffs, geysers blast boiling water into the air, and whole towns are heated and powered almost entirely by the Earth's own volcanic warmth — <b>nearly 100% renewable energy.</b>",
+     "In some spots, you can even snorkel in a crystal-clear rift and touch two continents at once, one hand on each plate."
+   ],
+   pull:"Fire and ice, forever arguing — and creating something breathtaking in the space between.",
+   spark:"Icelanders famously believe in 'hidden folk', and roads have occasionally been rerouted to avoid disturbing the rocks where elves are said to live.",
+   takeaway:"Opposites don't have to cancel out. Held together, fire and ice can power a whole nation."},
+
+  {cat:"geography",emoji:"🌉",title:"The bridges you grow instead of build",who:"Living Root Bridges · Meghalaya, India",
+   body:[
+     "In the wettest corner of India — Meghalaya, where monsoon rains would rot any wooden bridge in months — the Khasi people invented something wondrous. Instead of building bridges, they <b>grow</b> them.",
+     "They guide the living roots of rubber fig trees across rivers, patiently training them over hollowed betel trunks. It takes 15, 20, sometimes 30 years for the roots to reach the far bank and knit together. The gardener who starts a bridge may never cross the finished one.",
+     "But once grown, these living bridges last for centuries — getting stronger every year, because they're still alive."
+   ],
+   pull:"Some bridges are planted by one generation so the next can cross. That's the whole point.",
+   spark:"One famous 'double-decker' root bridge has two levels stacked one above the other, and can hold dozens of people at once.",
+   takeaway:"The best things you build may take longer than you have — plant them anyway, for whoever comes after."},
+
+  {cat:"fun",emoji:"🦦",title:"They hold hands so they don't drift apart",who:"Sea Otters",
+   body:[
+     "Sea otters spend most of their lives floating on their backs in the cold ocean, cracking open shellfish on rocks they balance on their bellies. But when it's time to sleep, they face a problem: the current could carry them away from each other in the night.",
+     "So they hold hands. Otters drift off to sleep <b>holding paws</b>, sometimes in big 'rafts' of dozens or even hundreds, so no one floats away alone.",
+     "They'll also wrap themselves in strands of seaweed to stay anchored, and tuck their favourite rock into a little pocket of loose skin under their arm to keep it safe. Practical <i>and</i> adorable."
+   ],
+   pull:"Even the ocean's tiny otters know: hold on to the ones you love so you don't drift apart.",
+   spark:"A sea otter's fur is the densest of any animal — up to a million hairs per square inch — keeping them warm without any blubber.",
+   takeaway:"When the current is strong, reach for someone's hand. You don't have to float through the night alone."},
+
+  {cat:"fun",emoji:"🌲",title:"The secret internet under the forest",who:"The Wood Wide Web",
+   body:[
+     "Walk through a forest and it looks like a crowd of trees all competing for light. But underground, something astonishing is happening: the trees are <b>talking to each other.</b>",
+     "Their roots are woven together by a vast network of fungal threads, which scientists nicknamed the \"Wood Wide Web.\" Through it, trees share sugar and water, send chemical warning signals when pests attack, and older \"mother trees\" even funnel nutrients to their struggling seedlings.",
+     "A forest isn't a competition. It's a cooperative — a single, connected, living community whispering beneath your feet."
+   ],
+   pull:"A forest survives not because each tree wins, but because they quietly feed each other underground.",
+   spark:"A dying tree will sometimes pump its remaining nutrients out through the network to its neighbours — a final gift to the community.",
+   takeaway:"Real strength is a network, not a solo act. Share what you have; the whole forest grows stronger."},
+
+  {cat:"fun",emoji:"⏳",title:"Cleopatra lived closer to us than to the pyramids",who:"A Twist of Time",
+   body:[
+     "Here's a fact that bends your brain: the Great Pyramid of Giza was already <b>ancient</b> when Cleopatra was born. Truly, staggeringly ancient.",
+     "The pyramids were built around 2560 BC. Cleopatra lived around 30 BC. That's a gap of about 2,500 years. But Cleopatra lived only about 2,000 years before <i>us.</i>",
+     "So Cleopatra was closer in time to the Moon landing and the first iPhone than she was to the building of the pyramids she lived beside. History is far deeper — and far stranger — than it feels."
+   ],
+   pull:"To Cleopatra, the pyramids were already a mysterious wonder from the deep past.",
+   spark:"There were also woolly mammoths still alive on a remote Arctic island when the pyramids were being built.",
+   takeaway:"The scale of history is humbling. You're a tiny, precious moment in an unimaginably long story — make it count."},
+
+  {cat:"fun",emoji:"✨",title:"You are made of exploded stars",who:"Stardust",
+   body:[
+     "The iron in your blood, the calcium in your bones, the oxygen you breathe — none of it was made on Earth. These atoms were forged in the blazing hearts of ancient stars, billions of years ago.",
+     "When those giant stars died in colossal explosions called supernovas, they scattered their elements across space. That stardust drifted for eons, gathered into clouds, and eventually formed our Sun, our planet — and <b>you.</b>",
+     "So the next time you feel small, remember: you are quite literally made of star-stuff, briefly assembled into a being that can look up at the sky it came from and wonder."
+   ],
+   pull:"\"We are a way for the cosmos to know itself.\" — Carl Sagan",
+   spark:"The atoms in your right hand may have come from a different dying star than the atoms in your left. You are a meeting place of ancient suns.",
+   takeaway:"You are not separate from the universe — you're the universe, awake and looking at itself. Never feel small."}
 ];
 
 /* ---------- Motivational words ---------- */
@@ -514,7 +825,17 @@ const WORDS = [
   {w:"Coddiwomple",e:"🚶",d:"To travel purposefully toward a destination that is, as yet, unknown. Go anyway."},
   {w:"Vorfreude",e:"🎁",d:"German — the sparkling joy of looking forward to something wonderful."},
   {w:"Querencia",e:"🏡",d:"Spanish — the place where you feel most safe, strong, and truly yourself."},
-  {w:"Eunoia",e:"💭",d:"Greek for 'beautiful thinking' — a well and healthy mind. The shortest word using all five vowels."}
+  {w:"Eunoia",e:"💭",d:"Greek for 'beautiful thinking' — a well and healthy mind. The shortest word using all five vowels."},
+  {w:"Jugaad",e:"🔧",d:"Hindi — a clever, frugal, improvised fix. Making a way where there wasn't one."},
+  {w:"Seva",e:"🙏",d:"Sanskrit — selfless service. Helping others expecting nothing back."},
+  {w:"Ananda",e:"🌸",d:"Sanskrit — pure, causeless bliss. Joy that doesn't depend on anything outside you."},
+  {w:"Hygge",e:"🕯️",d:"Danish — the deep cosiness of warmth, good company, and being fully at ease."},
+  {w:"Lagom",e:"⚖️",d:"Swedish — not too much, not too little. Exactly the right, balanced amount."},
+  {w:"Shinrin-yoku",e:"🌲",d:"Japanese — 'forest bathing.' Healing yourself simply by being among the trees."},
+  {w:"Pronoia",e:"🍀",d:"The opposite of paranoia — a quiet faith that the universe is conspiring in your favour."},
+  {w:"Nunchi",e:"👂",d:"Korean — the subtle art of reading a room and sensing how others truly feel."},
+  {w:"Aloha",e:"🌺",d:"Hawaiian — far more than hello: love, presence, and the shared breath of life."},
+  {w:"Solivagant",e:"🚶‍♀️",d:"A wanderer who roams alone — finding themselves in the quiet of their own company."}
 ];
 
 /* ---------- State + rendering ---------- */
@@ -655,6 +976,76 @@ $("favToggle").onclick = ()=>{
   c.onclick = ()=>{ activeCat=c.dataset.c; syncChips(); offset=0; render(); };
 });
 
+/* ---------- Daily Journal ---------- */
+const J_KEY = "storyteller_journal_v1";
+let jOffset = 0;
+function jLoad(){ try{return JSON.parse(localStorage.getItem(J_KEY))||{}}catch(e){return {}} }
+function jSave(o){ try{localStorage.setItem(J_KEY, JSON.stringify(o))}catch(e){} }
+function dateKey(off){
+  const d = new Date(Date.now()+off*DAY_MS);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function jLabel(off){
+  const d = new Date(Date.now()+off*DAY_MS);
+  if(off===0) return "Today";
+  if(off===-1) return "Yesterday";
+  if(off===1) return "Tomorrow";
+  return d.toLocaleDateString(undefined,{weekday:"short",month:"short",day:"numeric"});
+}
+let savedTimer=null;
+function flashSaved(){
+  $("jSaved").classList.add("show");
+  clearTimeout(savedTimer);
+  savedTimer = setTimeout(()=>$("jSaved").classList.remove("show"), 1200);
+}
+function renderJournal(){
+  $("jDate").textContent = jLabel(jOffset);
+  const all = jLoad(); const entry = all[dateKey(jOffset)] || {};
+  $("amNote").value = entry.am || "";
+  $("pmNote").value = entry.pm || "";
+}
+function journalInput(){
+  const all = jLoad(); const k = dateKey(jOffset);
+  all[k] = { am: $("amNote").value, pm: $("pmNote").value };
+  if(!all[k].am && !all[k].pm) delete all[k];   // don't store empty days
+  jSave(all); flashSaved();
+}
+$("jPrev").onclick = ()=>{ jOffset--; renderJournal(); };
+$("jNext").onclick = ()=>{ jOffset++; renderJournal(); };
+$("amNote").addEventListener("input", journalInput);
+$("pmNote").addEventListener("input", journalInput);
+
+/* ---------- Up Next / reading list ---------- */
+const R_KEY = "storyteller_readlist_v1";
+function rLoad(){ try{return JSON.parse(localStorage.getItem(R_KEY))||[]}catch(e){return []} }
+function rSave(a){ try{localStorage.setItem(R_KEY, JSON.stringify(a))}catch(e){} }
+function renderReadList(){
+  const list = rLoad(); const box = $("rList");
+  if(!list.length){ box.innerHTML = `<div class="rempty">Nothing queued yet — add anything you're curious about above. 📖</div>`; return; }
+  box.innerHTML = list.map((it,i)=>`
+    <div class="rrow${it.done?" done":""}">
+      <div class="rbox${it.done?" on":""}" data-i="${i}" role="checkbox" aria-checked="${it.done}" title="Mark read">${it.done?"✓":""}</div>
+      <div class="rtext">${escapeHtml(it.text)}</div>
+      <button class="rdel" data-d="${i}" title="Remove">×</button>
+    </div>`).join("");
+  [...box.querySelectorAll(".rbox")].forEach(el=>el.onclick=()=>{
+    const list=rLoad(); const i=+el.dataset.i; if(list[i]){ list[i].done=!list[i].done; rSave(list); renderReadList(); }
+  });
+  [...box.querySelectorAll(".rdel")].forEach(el=>el.onclick=()=>{
+    const list=rLoad(); list.splice(+el.dataset.d,1); rSave(list); renderReadList();
+  });
+}
+function escapeHtml(s){ return s.replace(/[&<>"']/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;","'":"&#39;"}[c])); }
+function addRead(){
+  const inp = $("rInput"); const t = inp.value.trim(); if(!t) return;
+  const list = rLoad(); list.unshift({text:t, done:false}); rSave(list);
+  inp.value=""; renderReadList();
+}
+$("rAdd").onclick = addRead;
+$("rInput").addEventListener("keydown", e=>{ if(e.key==="Enter") addRead(); });
+
 render();
+renderJournal();
+renderReadList();
 </script>
 </body></html>

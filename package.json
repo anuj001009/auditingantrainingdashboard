@@ -1,0 +1,12 @@
+{
+  "name": "auditing-training-dashboard",
+  "version": "1.0.0",
+  "private": true,
+  "description": "Static host for the Auditing & Training Dashboard and the Daily Storyteller",
+  "scripts": {
+    "start": "node server.js"
+  },
+  "engines": {
+    "node": ">=18"
+  }
+}
