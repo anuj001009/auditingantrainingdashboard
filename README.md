@@ -8,7 +8,8 @@ Sales-ops tooling for the Topmate HubSpot CRM (portal 244132076).
   - *Audit the Kills* — review every NI/DQ/DNP/FU-DNP and mark each a **Real No** or a **Forced No**.
   - *Message Playbook* — current vs approved replacement message per stage, with A/B variants.
   - *Adherence* — capture what reps actually send and track on-script % before vs after training.
-- **index.html** — landing page linking the two tools.
+- **storyteller.html** — Daily Storyteller: a standalone, offline-friendly page that serves a fresh motivational story each day. Rotates through inspiring people (Nimsdai Purja, Wangari Maathai, Shackleton, Katherine Johnson…), history, geography, and fun facts, plus a "spark word of the day." Browse by category, hit *Surprise me*, and save favourites (stored in browser localStorage).
+- **index.html** — landing page linking the tools.
 
 ## Important: live data requires Cowork
 These pages pull live HubSpot data through the Claude **Cowork** bridge (`window.cowork.callMcpTool`).

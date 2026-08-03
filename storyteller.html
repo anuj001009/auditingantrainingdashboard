@@ -1,0 +1,660 @@
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Daily Storyteller</title>
+<style>
+:root{
+  color-scheme:light;
+  --bg:#fdf7f0; --ink:#241c15; --muted:#7a6a58;
+  --card:#ffffff; --line:#efe2d3;
+  --accent:#e8663c; --accent2:#f2a03d; --gold:#c98a12;
+  --people:#e8663c; --history:#8a5cd0; --geo:#1f9d76; --fun:#2f7fd8; --word:#c98a12;
+}
+*{box-sizing:border-box}
+html,body{margin:0}
+body{
+  background:
+    radial-gradient(1200px 500px at 85% -8%, #ffe9d4 0, rgba(255,233,212,0) 60%),
+    radial-gradient(900px 500px at -5% 5%, #ffe2ea 0, rgba(255,226,234,0) 55%),
+    var(--bg);
+  color:var(--ink);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Arial,sans-serif;
+  line-height:1.6;-webkit-font-smoothing:antialiased;
+}
+.wrap{max-width:820px;margin:0 auto;padding:34px 20px 70px}
+
+/* Header */
+.top{display:flex;align-items:center;justify-content:space-between;gap:12px;flex-wrap:wrap;margin-bottom:6px}
+.brand{display:flex;align-items:center;gap:11px}
+.logo{width:44px;height:44px;border-radius:13px;display:grid;place-items:center;font-size:24px;
+  background:linear-gradient(135deg,var(--accent),var(--accent2));box-shadow:0 6px 16px rgba(232,102,60,.32)}
+h1{font-size:23px;margin:0;letter-spacing:-.3px}
+.date{font-size:13px;color:var(--muted);font-weight:600}
+.back{font-size:12.5px;color:var(--muted);text-decoration:none;font-weight:600;border:1px solid var(--line);
+  background:#fff;border-radius:20px;padding:6px 13px;transition:.15s}
+.back:hover{border-color:var(--accent);color:var(--accent)}
+
+/* Word of the day banner */
+.word{margin:20px 0 22px;background:linear-gradient(135deg,#fff6e8,#fff);border:1px solid #f4e2c4;
+  border-radius:16px;padding:16px 18px;display:flex;gap:14px;align-items:center;box-shadow:0 3px 12px rgba(201,138,18,.08)}
+.word .em{font-size:30px}
+.word .k{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
+.word .v{font-size:18px;font-weight:800;margin:1px 0 2px}
+.word .d{font-size:13px;color:var(--muted)}
+
+/* Story card */
+.card{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;
+  box-shadow:0 10px 34px rgba(70,40,20,.10)}
+.hero{padding:26px 26px 20px;color:#fff;position:relative}
+.hero .cat{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;letter-spacing:.08em;
+  text-transform:uppercase;background:rgba(255,255,255,.22);padding:5px 11px;border-radius:20px;backdrop-filter:blur(2px)}
+.hero h2{margin:13px 0 4px;font-size:27px;line-height:1.18;letter-spacing:-.4px}
+.hero .who{font-size:14px;opacity:.94;font-weight:600}
+.hero .emoji{position:absolute;top:20px;right:22px;font-size:40px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.2))}
+.body{padding:22px 26px 8px}
+.body p{margin:0 0 15px;font-size:16px}
+.pull{border-left:4px solid var(--accent);background:#fff7f3;border-radius:0 12px 12px 0;
+  padding:13px 16px;margin:4px 0 18px;font-size:15.5px;font-style:italic;color:#5a3d2f}
+.spark{display:flex;gap:11px;align-items:flex-start;background:#f3fbf7;border:1px solid #d7f0e5;
+  border-radius:13px;padding:13px 15px;margin:2px 0 8px}
+.spark .b{font-size:20px}
+.spark .t{font-size:14px}.spark .t b{color:#12805e}
+.takeaway{margin:16px 0 6px;padding:15px 17px;border-radius:14px;font-size:15.5px;font-weight:600;
+  background:linear-gradient(135deg,#fff1ea,#ffe6d6);color:#8a3d1e;display:flex;gap:10px;align-items:center}
+.takeaway .b{font-size:20px}
+
+.foot{display:flex;align-items:center;justify-content:space-between;padding:14px 22px 20px;border-top:1px solid var(--line);gap:10px;flex-wrap:wrap}
+.fav{border:1px solid var(--line);background:#fff;border-radius:22px;padding:8px 15px;font-size:13.5px;font-weight:700;
+  cursor:pointer;color:var(--muted);transition:.15s;display:inline-flex;gap:7px;align-items:center}
+.fav:hover{border-color:var(--accent)}
+.fav.on{background:#fff0e9;border-color:var(--accent);color:var(--accent)}
+.pos{font-size:12.5px;color:var(--muted);font-weight:600}
+
+/* Controls */
+.controls{display:flex;gap:10px;margin:18px 0 8px;flex-wrap:wrap}
+.btn{flex:1;min-width:120px;border:none;border-radius:14px;padding:13px 14px;font-size:14.5px;font-weight:800;
+  cursor:pointer;transition:.15s;display:inline-flex;gap:8px;align-items:center;justify-content:center}
+.btn.today{background:linear-gradient(135deg,var(--accent),var(--accent2));color:#fff;box-shadow:0 6px 16px rgba(232,102,60,.30)}
+.btn.today:hover{filter:brightness(1.05)}
+.btn.ghost{background:#fff;border:1px solid var(--line);color:var(--ink)}
+.btn.ghost:hover{border-color:var(--accent);color:var(--accent)}
+.btn:active{transform:translateY(1px)}
+
+/* Filter chips */
+.chips{display:flex;gap:8px;flex-wrap:wrap;margin:20px 0 6px}
+.chip{border:1px solid var(--line);background:#fff;border-radius:20px;padding:7px 14px;font-size:13px;font-weight:700;
+  cursor:pointer;color:var(--muted);transition:.15s}
+.chip:hover{border-color:#d9c6b2}
+.chip.on{color:#fff;border-color:transparent}
+.chip.on[data-c="all"]{background:#4a3628}
+.chip.on[data-c="people"]{background:var(--people)}
+.chip.on[data-c="history"]{background:var(--history)}
+.chip.on[data-c="geography"]{background:var(--geo)}
+.chip.on[data-c="fun"]{background:var(--fun)}
+
+.meta{font-size:12px;color:var(--muted);text-align:center;margin-top:26px}
+.meta a{color:var(--accent);text-decoration:none;font-weight:700}
+
+/* Favorites drawer */
+.favlist{margin-top:12px;background:#fff;border:1px solid var(--line);border-radius:16px;padding:6px 6px;display:none}
+.favlist.show{display:block}
+.favrow{display:flex;align-items:center;gap:10px;padding:10px 12px;border-radius:11px;cursor:pointer}
+.favrow:hover{background:#faf3ec}
+.favrow .e{font-size:20px}
+.favrow .tt{font-size:14px;font-weight:700}
+.favrow .cc{font-size:11.5px;color:var(--muted)}
+.favempty{padding:16px;text-align:center;color:var(--muted);font-size:13.5px}
+
+@media(max-width:520px){
+  .hero h2{font-size:23px}.hero .emoji{font-size:32px}
+  .wrap{padding:22px 14px 60px}
+}
+</style></head>
+<body><div class="wrap">
+
+  <div class="top">
+    <div class="brand">
+      <div class="logo">📖</div>
+      <div>
+        <h1>Daily Storyteller</h1>
+        <div class="date" id="dateLabel"></div>
+      </div>
+    </div>
+    <a class="back" href="index.html">← Dashboard</a>
+  </div>
+
+  <!-- Word of the day -->
+  <div class="word" id="wordBox">
+    <div class="em" id="wordEmoji">✨</div>
+    <div>
+      <div class="k">Spark word of the day</div>
+      <div class="v" id="wordVal"></div>
+      <div class="d" id="wordDef"></div>
+    </div>
+  </div>
+
+  <!-- Story card -->
+  <div class="card">
+    <div class="hero" id="hero">
+      <span class="cat" id="cat"></span>
+      <span class="emoji" id="emoji"></span>
+      <h2 id="title"></h2>
+      <div class="who" id="who"></div>
+    </div>
+    <div class="body" id="storyBody"></div>
+    <div class="foot">
+      <button class="fav" id="favBtn">☆ Save story</button>
+      <span class="pos" id="pos"></span>
+    </div>
+  </div>
+
+  <!-- Controls -->
+  <div class="controls">
+    <button class="btn ghost" id="prevBtn">← Yesterday</button>
+    <button class="btn today" id="randBtn">🎲 Surprise me</button>
+    <button class="btn ghost" id="nextBtn">Tomorrow →</button>
+  </div>
+
+  <!-- Filter -->
+  <div class="chips" id="chips">
+    <span class="chip on" data-c="all">✦ All</span>
+    <span class="chip" data-c="people">🔥 People</span>
+    <span class="chip" data-c="history">🏛️ History</span>
+    <span class="chip" data-c="geography">🌍 Geography</span>
+    <span class="chip" data-c="fun">💡 Fun facts</span>
+  </div>
+
+  <button class="btn ghost" id="favToggle" style="width:100%;margin-top:12px">⭐ My saved stories (<span id="favCount">0</span>)</button>
+  <div class="favlist" id="favList"></div>
+
+  <div class="meta">
+    A fresh story every day — motivation, wonder, history &amp; the wide wild world.<br>
+    Works fully offline. Saved stories live in your browser. · <a href="index.html">Back to dashboard</a>
+  </div>
+
+</div>
+<script>
+/* ---------- Story library ---------- */
+const CATS = {
+  people:{label:"Inspiring People", c1:"#e8663c", c2:"#f2a03d"},
+  history:{label:"History", c1:"#8a5cd0", c2:"#b98af0"},
+  geography:{label:"Geography", c1:"#1f9d76", c2:"#4fc79c"},
+  fun:{label:"Fun Fact", c1:"#2f7fd8", c2:"#63aef0"}
+};
+
+const STORIES = [
+  {cat:"people",emoji:"🏔️",title:"14 peaks in 6 months",who:"Nimsdai Purja · Project Possible",
+   body:[
+     "Everyone said it would take seven years — maybe a lifetime. To climb all fourteen of Earth's 8,000-metre mountains, the peaks so high they're called the Death Zone, had taken the fastest climbers the better part of a decade.",
+     "Nimsdai \"Nims\" Purja, a former Gurkha soldier from Nepal, looked at that number and smiled. He mortgaged his house to fund it, called the plan \"Project Possible,\" and set off. He summited the first six Himalayan giants — Everest, Lhotse and Makalu among them — in a breathless twelve days.",
+     "Storms, avalanches, rescues of stranded strangers along the way, and endless doubt from sponsors couldn't stop him. On 29 October 2019, he stood on top of Shishapangma, the final peak. Total time: <b>six months and six days.</b>"
+   ],
+   pull:"\"It's not about being the strongest. It's about refusing to quit when every reason says you should.\"",
+   spark:"Nims also once queued in a human traffic jam near Everest's summit — and his photo of it went viral worldwide, changing how the world saw the mountain.",
+   takeaway:"Impossible is often just a timeline nobody has dared to shrink. Pick your mountain — then move faster than the doubt."},
+
+  {cat:"people",emoji:"🌳",title:"The woman who planted 50 million trees",who:"Wangari Maathai · Kenya",
+   body:[
+     "In 1977, a Kenyan scientist named Wangari Maathai noticed her country's hills turning bare and brown. Streams were drying up, women walked farther each year for firewood. So she did something radical in its simplicity: she paid rural women a few cents to plant trees.",
+     "People laughed. Governments pushed back — she was jailed, beaten, and mocked. But the Green Belt Movement grew, tree by tree, woman by woman. Over the years those small hands planted more than <b>50 million trees</b> across Africa.",
+     "In 2004 she became the first African woman to win the Nobel Peace Prize — for proving that peace, democracy and a healthy planet grow from the same soil."
+   ],
+   pull:"\"It's the little things citizens do. That's what will make the difference. My little thing is planting trees.\"",
+   spark:"Her hummingbird parable is famous: when a forest burns, the tiny hummingbird carries single drops of water to fight it, saying, \"I am doing the best I can.\"",
+   takeaway:"You don't need permission or a fortune to change a landscape. Start with one seed and keep going."},
+
+  {cat:"people",emoji:"🏃",title:"The marathon on one leg",who:"Terry Fox · Marathon of Hope",
+   body:[
+     "At 18, Terry Fox lost his right leg to cancer. Lying in the hospital, surrounded by suffering children, he made a promise: he would run across all of Canada to raise money to fight the disease.",
+     "On an artificial leg, he ran the distance of a full marathon — about 42 kilometres — <b>every single day</b>. Through rain, wind, and pain, he covered 5,373 km in 143 days. Crowds began lining the highways just to cheer.",
+     "The cancer returned and forced him to stop before he finished. Terry died at 22. But his run never did: the annual Terry Fox Run is now held in over 60 countries and has raised more than <b>$850 million</b> for cancer research."
+   ],
+   pull:"\"I'm not a dreamer… but I believe in miracles. I have to.\"",
+   spark:"He hopped-and-stepped with each stride — a gait so distinctive that people recognised his silhouette from far down the road.",
+   takeaway:"You may not reach the finish line yourself. Run anyway — someone will carry the last mile."},
+
+  {cat:"people",emoji:"🚀",title:"The math that flew us to the Moon",who:"Katherine Johnson · NASA",
+   body:[
+     "Before computers were trusted, NASA trusted Katherine Johnson. A brilliant Black mathematician in segregated 1960s America, she calculated the flight paths that put the first Americans into space.",
+     "When electronic computers were finally installed for John Glenn's orbit of Earth, Glenn didn't fully trust the machine. His request was simple: <b>\"Get the girl to check the numbers.\"</b> If Katherine said they were good, he'd fly.",
+     "She did. He flew. And her calculations later helped guide Apollo 11 to the Moon and safely home."
+   ],
+   pull:"\"Like what you do, and then you will do your best.\"",
+   spark:"Katherine loved to count everything as a child — the steps to church, the dishes she washed, the stars. Numbers were her first language.",
+   takeaway:"Excellence is louder than any wall built to silence it. Do the work so well it can't be ignored."},
+
+  {cat:"people",emoji:"⛵",title:"The greatest survival story ever",who:"Ernest Shackleton · Endurance",
+   body:[
+     "In 1915, explorer Ernest Shackleton's ship <i>Endurance</i> was crushed by Antarctic ice, stranding 28 men on the frozen sea with no radio and no hope of rescue.",
+     "What followed is legend. They camped on drifting ice floes, then sailed tiny lifeboats to a barren island. Shackleton and five others then crossed 1,300 km of the world's stormiest ocean in a boat the size of a car — and hiked over uncharted mountains to reach a whaling station.",
+     "Then he went back for the rest. After nearly two years, <b>every single one of his 28 men came home alive.</b>"
+   ],
+   pull:"His recruitment ad supposedly read: \"Men wanted for hazardous journey… safe return doubtful.\" Thousands applied.",
+   spark:"When the ship was sinking, Shackleton let the men keep only two pounds of personal gear each — but insisted the banjo stay, calling it \"vital mental medicine.\"",
+   takeaway:"A great leader's real job isn't the summit — it's getting everyone home. Look after your crew first."},
+
+  {cat:"people",emoji:"✈️",title:"She refused to be told 'no'",who:"Bessie Coleman · Aviator",
+   body:[
+     "In 1920s America, no flight school would teach a Black woman to fly. So Bessie Coleman learned French, sailed to Paris, and earned her pilot's licence there — becoming the first Black woman and first Native American woman in the world to fly a plane.",
+     "She returned home a daredevil \"barnstormer,\" thrilling crowds with loops and dives. But she refused to perform anywhere that segregated its audiences, insisting Black and white spectators enter through the same gate.",
+     "\"Queen Bess\" dreamed of opening a flight school so others wouldn't have to cross an ocean to chase the sky."
+   ],
+   pull:"\"The air is the only place free from prejudice.\"",
+   spark:"Every year, Black pilots fly over her Chicago grave and drop flowers — a tradition honouring the woman who opened the sky.",
+   takeaway:"If the door is locked, learn a new language and find another door. The sky doesn't check your paperwork."},
+
+  {cat:"people",emoji:"🏃‍♂️",title:"The four-minute mile that couldn't be run",who:"Roger Bannister · 1954",
+   body:[
+     "For decades, doctors and athletes agreed: the human body simply could not run a mile in under four minutes. It was, they said, physically impossible — the heart might burst trying.",
+     "On a cold, windy day in Oxford in 1954, a medical student named Roger Bannister ignored them. Pacing himself with two friends, he crossed the line in <b>3 minutes, 59.4 seconds.</b>",
+     "Here's the magic: within 46 days, another runner broke it too. Within a few years, dozens had. The barrier was never in the legs — it was in the mind."
+   ],
+   pull:"\"It's the ability to take more out of yourself than you've got.\"",
+   spark:"Bannister trained on his lunch breaks between hospital shifts — no coach, no funding, just relentless intent.",
+   takeaway:"Once someone proves it's possible, the 'impossible' collapses for everyone. Be the one who goes first."},
+
+  {cat:"people",emoji:"🌊",title:"Her Deepness and the living ocean",who:"Sylvia Earle · Oceanographer",
+   body:[
+     "Sylvia Earle has spent over 7,000 hours underwater — more than most people spend awake in a year. In 1979 she strapped on a diving suit and walked untethered along the seafloor at 381 metres, <b>deeper than any human had walked before, before or since.</b>",
+     "Now in her late 80s, she's still diving, still exploring, still fighting to protect the seas. She calls her mission \"Hope Spots\" — protected patches of ocean that can heal and spread life outward.",
+     "The world nicknamed her \"Her Deepness.\" She simply calls the ocean \"the blue heart of the planet.\""
+   ],
+   pull:"\"No water, no life. No blue, no green.\"",
+   spark:"On that record dive she saw glowing, bioluminescent creatures spiral past — living light in the total darkness of the deep.",
+   takeaway:"Curiosity has no retirement age. Keep exploring the parts of the world everyone else swims over."},
+
+  {cat:"people",emoji:"🎨",title:"The painter who started at 78",who:"Grandma Moses · Late bloomer",
+   body:[
+     "Anna Mary Robertson — \"Grandma Moses\" — spent her whole life as a farm worker. When arthritis made it too painful to hold an embroidery needle in her late 70s, she picked up a paintbrush instead.",
+     "Her cheerful scenes of country life were spotted in a drugstore window by a collector. By her 80s she was famous. By her 90s her paintings hung in museums, and she'd created over 1,500 works.",
+     "She painted until she died at <b>101</b>, proving your best chapter can begin long after everyone assumes the book is closed."
+   ],
+   pull:"\"Life is what we make it, always has been, always will be.\"",
+   spark:"On her 100th birthday, the governor of New York declared it \"Grandma Moses Day.\"",
+   takeaway:"It is never, ever too late to start the thing. Your 78-year-old self might just be getting warmed up."},
+
+  {cat:"people",emoji:"🏔️",title:"Running up mountains for fun",who:"Kilian Jornet · Skyrunner",
+   body:[
+     "Kilian Jornet grew up in a mountain hut 2,000 metres up in the Pyrenees. He climbed his first 3,000-metre peak at age three. For him, mountains aren't obstacles — they're a playground.",
+     "As an adult he set records that read like typos: up and down Mont Blanc in under 5 hours; the Matterhorn round-trip in under 3. In 2017 he summited Everest <b>twice in one week</b> — with no fixed ropes and no supplemental oxygen.",
+     "He runs where others crawl, treating the highest places on Earth with the joy of a kid on a trail."
+   ],
+   pull:"\"The summit is just the halfway point. The real goal is to come back and do it again — smiling.\"",
+   spark:"He often trains by 'linking' peaks — running a ridgeline that touches a dozen summits in a single day.",
+   takeaway:"Reframe the hard thing as play, and you'll go places grim determination never could."},
+
+  {cat:"history",emoji:"🎄",title:"The night the war stopped",who:"The Christmas Truce · 1914",
+   body:[
+     "Christmas Eve, 1914. The trenches of the First World War were freezing, muddy hell. Then, in the dark, British soldiers heard something drift across No Man's Land: German voices, singing <i>Stille Nacht</i> — Silent Night.",
+     "One by one, men climbed out of the trenches — unarmed. They shook hands. They swapped chocolate, buttons and photographs of home. In places, they played football with a makeshift ball between the shell craters.",
+     "For a few hours along parts of the Western Front, the men who were ordered to kill each other simply… didn't. They wished each other Merry Christmas instead."
+   ],
+   pull:"\"We had shaken hands with the enemy, and found he was just a man like us.\"",
+   spark:"Generals on both sides were horrified and banned any repeat — because a soldier who sees the enemy's humanity is hard to send back to fight.",
+   takeaway:"Even in the darkest places, our shared humanity is always looking for a door. Be the one who sings first."},
+
+  {cat:"history",emoji:"🗝️",title:"The stone that unlocked a language",who:"The Rosetta Stone",
+   body:[
+     "For 1,400 years, the hieroglyphs of ancient Egypt were a locked door. No one alive could read them. The voices of the pharaohs had gone completely silent.",
+     "Then in 1799, French soldiers in Egypt uncovered a slab of dark stone carved with the same message in three scripts: Greek (which scholars could read), and two forms of Egyptian. It was a translation key, waiting 2,000 years to be found.",
+     "A young scholar named Jean-François Champollion cracked it, and suddenly <b>3,000 years of Egyptian civilisation began to speak again</b> — tombs, love poems, shopping lists, and all."
+   ],
+   pull:"When Champollion finally solved it, he ran to his brother's office, cried \"I've got it!\" — and fainted from the excitement.",
+   spark:"He'd taught himself a dozen ancient languages as a boy specifically so that one day he could read Egypt.",
+   takeaway:"The right key can reopen a world thought lost forever. Keep looking for the pattern that connects."},
+
+  {cat:"history",emoji:"⚙️",title:"The 2,000-year-old computer",who:"The Antikythera Mechanism",
+   body:[
+     "In 1901, divers exploring an ancient shipwreck off a Greek island hauled up a corroded lump of bronze. For decades it sat ignored in a museum drawer.",
+     "When X-rays finally peered inside, they revealed something astonishing: <b>more than 30 precision gears</b>, intricately meshed. It was an analog computer — built over 2,000 years ago — that could predict eclipses, track the Moon and planets, and even mark the date of the Olympic Games.",
+     "Nothing else this complex would appear again for over a thousand years. The ancient world was cleverer than we ever imagined."
+   ],
+   pull:"Its gear-work is so fine that modern engineers needed CT scanners just to understand how it moved.",
+   spark:"It even accounted for the Moon's uneven, wobbly speed across the sky — a subtlety that stumped astronomers for centuries afterward.",
+   takeaway:"Don't underestimate the people who came before you. Genius has always been walking the Earth."},
+
+  {cat:"history",emoji:"📮",title:"The empire that ran on horseback",who:"The Yam · Mongol Postal Relay",
+   body:[
+     "The Mongol Empire was the largest connected land empire in history. To hold it together, Genghis Khan and his heirs built something extraordinary: the <i>Yam</i>, a postal relay system.",
+     "Riders galloped between stations set roughly a day's ride apart, where a fresh horse and food always waited. A message could travel an astonishing <b>300 km in a single day</b>, racing across a continent from rider to rider.",
+     "It was, in effect, the internet of the 13th century — an information superhighway made of hooves, grasslands and human grit."
+   ],
+   pull:"Messengers wore bells so the next station heard them coming and had a fresh horse saddled before they even arrived.",
+   spark:"Marco Polo marvelled at it, describing hundreds of thousands of horses kept ready across the empire just to keep the news moving.",
+   takeaway:"Connection is a superpower. Build the system that lets good ideas travel faster than anyone expects."},
+
+  {cat:"history",emoji:"📸",title:"The first photograph ever taken",who:"View from a Window · 1826",
+   body:[
+     "Nearly 200 years ago, a French inventor named Nicéphore Niépce pointed a crude camera out of his upstairs window and left it there. Not for a fast click — for <b>at least eight hours</b>, letting sunlight slowly etch the scene onto a pewter plate coated in tar-like bitumen.",
+     "The result is blurry, ghostly rooftops. But it is the oldest surviving photograph in existence — the first time a human captured a slice of real light and kept it forever.",
+     "Because the exposure took all day, you can faintly see sunlight falling on <i>both</i> sides of the courtyard at once — the sun having crossed the whole sky while the image formed."
+   ],
+   pull:"Before this moment, the only way to save what your eyes saw was to draw it. After it, the world could be remembered exactly as it was.",
+   spark:"The plate was lost for decades and only rediscovered in 1952, tucked away in a trunk.",
+   takeaway:"Every everyday miracle we take for granted was once one stubborn person, waiting eight hours for the light."},
+
+  {cat:"history",emoji:"💡",title:"The library that dreamed of everything",who:"The Library of Alexandria",
+   body:[
+     "Over 2,000 years ago, the rulers of Alexandria in Egypt had a wildly ambitious dream: to collect <i>every book in the world</i> under one roof.",
+     "Ships docking in the harbour were searched — not for treasure, but for scrolls, which were copied and added to the shelves. Scholars from across the ancient world gathered there. It's where a librarian named Eratosthenes measured the size of the whole Earth using only shadows and math — and got it nearly right.",
+     "The library is long gone, but the dream never died: it simply became every library, every Wikipedia, every place we gather knowledge so no one has to start from zero."
+   ],
+   pull:"Eratosthenes calculated Earth's circumference around 240 BC using a stick, a shadow and the distance between two cities. His answer was within a few percent of the truth.",
+   spark:"At its height, the library may have held hundreds of thousands of scrolls — an almost unthinkable hoard of ideas for its time.",
+   takeaway:"The grandest dream is to gather knowledge and give it away. Learn something today; add it to the shelf."},
+
+  {cat:"geography",emoji:"🏔️",title:"The mountain that is still growing",who:"Everest / Sagarmatha / Chomolungma",
+   body:[
+     "Everest is the highest point on Earth at 8,849 metres — but here's the wonder: it isn't finished. India's tectonic plate is still crashing slowly into Asia, and the whole Himalayan range is being <b>pushed upward a few millimetres every year.</b>",
+     "The Nepali call it Sagarmatha, \"Goddess of the Sky.\" Tibetans call it Chomolungma, \"Mother of the World.\" On its summit, the air holds only a third of the oxygen you're breathing now.",
+     "And strangest of all: near the top you can find <i>fossils of sea creatures</i>. The highest place on land was once the bottom of an ancient ocean."
+   ],
+   pull:"The summit of the world was once a seabed. Given enough time, everything low can rise.",
+   spark:"Winds at the peak can top 320 km/h — faster than a Formula 1 car — and temperatures fall below −60°C.",
+   takeaway:"You are, quite literally, standing on a planet that is still rising. So can you."},
+
+  {cat:"geography",emoji:"🏜️",title:"When the Sahara was green",who:"The Green Sahara",
+   body:[
+     "The Sahara is the largest hot desert on Earth — an ocean of sand nearly the size of the United States. But it hasn't always been this way.",
+     "Just a few thousand years ago, this was a <b>green, lake-dotted grassland</b> roamed by hippos, giraffes and elephants. Ancient people painted them on cave walls that still survive, deep in what is now bone-dry rock. Fossilised riverbeds and lake beds hide beneath the dunes.",
+     "The Sahara actually 'breathes' — swinging between green and desert roughly every 20,000 years as Earth slowly wobbles on its axis. One day, it will bloom again."
+   ],
+   pull:"Beneath the world's greatest desert lie the ghosts of rivers and the bones of hippos.",
+   spark:"Dust blown from the Sahara across the Atlantic fertilises the Amazon rainforest — one dying-and-blooming landscape feeding another.",
+   takeaway:"Nothing stays the same forever — not even a desert. Your dry season is a chapter, not the whole story."},
+
+  {cat:"geography",emoji:"💧",title:"The waterfall that touches the clouds",who:"Angel Falls · Venezuela",
+   body:[
+     "Deep in the jungles of Venezuela, water plunges off the edge of a flat-topped mountain called Auyán-tepui and falls, and falls, and falls — <b>979 metres</b>, the tallest waterfall on Earth. That's about 15 times taller than Niagara.",
+     "It falls so far that on hot days the water dissolves into mist before it ever reaches the bottom, drifting away as fog.",
+     "The tabletop mountains it pours from are so ancient and isolated that they hide plants and creatures found nowhere else on the planet — real-life lost worlds in the sky."
+   ],
+   pull:"The water leaps so far that it turns to mist mid-air — a river that becomes a cloud before it lands.",
+   spark:"It's named after Jimmie Angel, a pilot who spotted it from the air in 1933 and later landed his plane on the boggy summit, where it stayed stuck for 33 years.",
+   takeaway:"Some drops never reach the ground — and are breathtaking anyway. The journey can be the whole point."},
+
+  {cat:"geography",emoji:"🌊",title:"The deepest place on Earth",who:"The Mariana Trench",
+   body:[
+     "In the western Pacific lies a wound in the seafloor so deep it could swallow Mount Everest whole — with more than 2 km of water still to spare. The bottom, called Challenger Deep, sits nearly <b>11 kilometres down.</b>",
+     "Down there, the pressure is like having 50 jumbo jets stacked on your head. It is pitch black, near-freezing, and utterly crushing. More people have walked on the Moon than have reached this spot.",
+     "And yet — it is not empty. Ghostly, translucent fish drift there. Tiny living things thrive in the crushing dark. Life, it turns out, refuses to give up anywhere."
+   ],
+   pull:"The lowest point on Earth is not lifeless. Even there, in the crushing dark, something is quietly alive.",
+   spark:"When explorers first reached the bottom in 1960, they were stunned to see a flatfish swim calmly past their window.",
+   takeaway:"Life finds a way in the most impossible conditions. Whatever pressure you're under, you can, too."},
+
+  {cat:"geography",emoji:"🌴",title:"The most alien island on Earth",who:"Socotra · Yemen",
+   body:[
+     "Off the coast of Yemen floats an island that looks like it belongs to another planet. Cut off from the mainland for millions of years, Socotra evolved on its own — and the results are wondrous.",
+     "Its most famous resident is the <i>dragon's blood tree</i>: shaped like an upturned umbrella, it bleeds bright red sap when cut. Around a <b>third of Socotra's plants exist nowhere else in the universe</b> but here.",
+     "Bulbous bottle trees, desert roses clinging to bare rock, birds and creatures found on no other shore — it's a living museum of evolution's imagination."
+   ],
+   pull:"Isolation didn't make Socotra poorer. It made it utterly, gloriously original.",
+   spark:"The dragon's blood tree's umbrella shape is clever engineering — it funnels scarce mist down to its own roots.",
+   takeaway:"Being cut off from the crowd can be exactly what lets you grow into something no one has ever seen."},
+
+  {cat:"geography",emoji:"🪞",title:"The world's biggest mirror",who:"Salar de Uyuni · Bolivia",
+   body:[
+     "High in the Andes of Bolivia lies the largest salt flat on Earth — over 10,000 square kilometres of blinding white, so flat that its height varies by less than a metre across its entire span.",
+     "When a thin layer of rain covers it, something magical happens: the ground becomes a <b>perfect mirror</b>, and the sky reflects so flawlessly that you can no longer tell where the earth ends and the heavens begin. People appear to walk on clouds.",
+     "It's so vast and even that satellites orbiting Earth use it to calibrate their instruments — nature's own measuring stick."
+   ],
+   pull:"When it rains, the largest salt flat on Earth becomes the largest mirror — and the sky comes down to walk with you.",
+   spark:"Beneath the salt lies a huge share of the world's lithium — the metal that powers the battery in your phone.",
+   takeaway:"Stillness can turn an ordinary surface into something that reflects the whole sky. Find your quiet, flat moment."},
+
+  {cat:"geography",emoji:"🏝️",title:"The oldest, deepest lake alive",who:"Lake Baikal · Siberia",
+   body:[
+     "In the frozen heart of Siberia sits a lake unlike any other. Baikal is the world's <b>deepest and oldest freshwater lake</b> — around 25 million years old and over 1.6 km deep. It holds roughly one-fifth of all the unfrozen fresh water on the entire planet.",
+     "Its water is so astonishingly clear that in winter, when it freezes into turquoise glass, you can see 40 metres straight down through the ice.",
+     "And in its depths lives the nerpa — the only seal on Earth that lives entirely in fresh water, thousands of kilometres from any ocean. How it got there is still a gentle mystery."
+   ],
+   pull:"One lake in Siberia holds a fifth of the world's liquid fresh water — and a seal that forgot it needed the sea.",
+   spark:"In deep winter the freezing ice cracks with booming, singing sounds that echo for kilometres across the surface.",
+   takeaway:"Depth takes time. The oldest, clearest things on Earth were patient for millions of years."},
+
+  {cat:"geography",emoji:"✨",title:"The sea that glows in the dark",who:"Bioluminescent Bays",
+   body:[
+     "In a handful of quiet bays around the world — in Puerto Rico, the Maldives, Australia — the ocean lights up at night. Every wave, every paddle stroke, every fish darting past leaves a trail of glowing electric blue.",
+     "The magic-makers are tiny creatures called dinoflagellates. When the water around them is disturbed, they flash with living light — a chemical spark called bioluminescence, the same trick a firefly uses.",
+     "Swim through it and your own body becomes outlined in cool blue fire. The stars above, and the stars below, and you drifting between them."
+   ],
+   pull:"Some seas answer your touch with light. Move gently, and the whole ocean sparkles back.",
+   spark:"Some squid and deep-sea fish use the very same glow to talk, hunt, and hide in the darkness of the deep.",
+   takeaway:"A little disturbance can reveal hidden light. Sometimes you have to move to see the magic in things."},
+
+  {cat:"fun",emoji:"🐙",title:"Three hearts and blue blood",who:"The Octopus",
+   body:[
+     "The octopus is basically an alien that already lives here. It has <b>three hearts</b> — two pump blood to the gills, one to the body — and that blood runs <i>blue</i>, because it carries oxygen using copper instead of iron.",
+     "Two-thirds of its neurons live in its arms, so each arm can taste, touch, and practically think for itself. Octopuses solve puzzles, open jars, use tools, and have escaped aquariums by squeezing through gaps the size of a coin.",
+     "Oh, and that central heart? It <b>stops beating when the octopus swims</b> — which is exactly why they usually prefer to crawl."
+   ],
+   pull:"An eight-armed genius with blue blood and a heart that pauses when it swims. Reality is stranger than any story.",
+   spark:"An octopus can change both the colour AND the texture of its skin in a fraction of a second — while being colour-blind itself.",
+   takeaway:"There's more than one way to build a brilliant mind. Different doesn't mean lesser — it can mean extraordinary."},
+
+  {cat:"fun",emoji:"🍯",title:"The food that never spoils",who:"Honey",
+   body:[
+     "Archaeologists digging in ancient Egyptian tombs have found sealed pots of honey over <b>3,000 years old</b> — and it was still perfectly edible. Honey is one of the only foods on Earth that essentially never goes bad.",
+     "The secret is chemistry: honey is so low in water and slightly acidic that bacteria simply can't survive in it. Bees also add a touch of natural hydrogen peroxide. Together it's a nearly perfect preservative.",
+     "So the honey on your toast is basically immortal. Sealed properly, it could outlast you, your grandchildren, and the century."
+   ],
+   pull:"A single jar of honey can outlive empires — and still taste sweet.",
+   spark:"To make just one spoonful of honey, bees collectively fly the distance of once around the Earth, visiting thousands of flowers.",
+   takeaway:"Patience and the right conditions can make something that lasts practically forever. Build things to keep."},
+
+  {cat:"fun",emoji:"🐻",title:"The toughest animal in the universe",who:"The Tardigrade",
+   body:[
+     "Meet the tardigrade — a chubby, eight-legged micro-animal, smaller than a grain of sand, that scientists lovingly call the \"water bear.\" It may be the most indestructible creature ever discovered.",
+     "It can survive being frozen to near absolute zero. Boiled past the boiling point of water. Dried out completely for decades. Blasted with radiation. It has even survived the raw <b>vacuum of open space</b>, bolted to the outside of a spacecraft.",
+     "Its trick: when things get bad, it curls into a dried-up ball called a 'tun,' switches its life almost entirely off — and waits. Add water, and it simply comes back to life."
+   ],
+   pull:"When the world becomes impossible, the water bear doesn't panic. It waits, patiently, for better days.",
+   spark:"Tardigrades have been on Earth for over 500 million years — they were here long before the dinosaurs, and shrugged off the disasters that killed them.",
+   takeaway:"Sometimes the strongest move is to endure quietly and wait for your moment to spring back to life."},
+
+  {cat:"fun",emoji:"🪐",title:"The planet where a day is longer than a year",who:"Venus",
+   body:[
+     "Our neighbour Venus does everything backwards. It spins so incredibly slowly that <b>a single day there lasts longer than its entire year.</b> One rotation takes 243 Earth-days; one trip around the Sun takes only 225.",
+     "It also spins the 'wrong' way, so on Venus the Sun would rise in the west and set in the east. Its thick clouds trap heat so fiercely that its surface is hot enough to melt lead — hotter even than Mercury, which sits far closer to the Sun.",
+     "A beautiful, blazing, backwards world — proof that the universe loves to break its own rules."
+   ],
+   pull:"On Venus, you could technically celebrate your birthday more than once in a single Venusian day.",
+   spark:"Venus is the brightest natural object in our night sky after the Moon — the dazzling \"evening star\" people have wished on for thousands of years.",
+   takeaway:"The rules you think are fixed aren't universal. Somewhere, everything you assume is done differently."},
+
+  {cat:"fun",emoji:"🍌",title:"Bananas are berries, but strawberries aren't",who:"Botanical Plot Twist",
+   body:[
+     "Here's a fact that reorganises your whole fruit bowl: botanically speaking, a <b>banana is a berry</b> — but a strawberry is not.",
+     "To a botanist, a true berry grows from a single flower with one ovary and has its seeds on the inside. That makes bananas, grapes, tomatoes, kiwis and even watermelons all berries. The strawberry, meanwhile, is a \"false fruit\" — its little seeds are actually the true fruits on the outside.",
+     "The names we use every day and the deep patterns underneath don't always match. The world is more surprising the closer you look."
+   ],
+   pull:"A watermelon is a berry. A strawberry isn't. Nature enjoys a good plot twist.",
+   spark:"Avocados and pumpkins are technically berries too — the botanical definition is delightfully broad.",
+   takeaway:"Look past the obvious labels. The interesting truth is often hiding one layer beneath the name."},
+
+  {cat:"fun",emoji:"🦑",title:"The jellyfish that can rewind death",who:"The Immortal Jellyfish",
+   body:[
+     "There's a tiny jellyfish, no bigger than your fingernail, with an astonishing party trick. When <i>Turritopsis dohrnii</i> is injured, starving, or simply old, it doesn't die. Instead, it <b>transforms its aging cells back into a young form</b> and starts its life over.",
+     "It's a bit like a butterfly turning back into a caterpillar — then growing up all over again. In theory, it can do this indefinitely, which is why scientists nicknamed it the \"immortal jellyfish.\"",
+     "It reminds us that even in nature's smallest, softest creatures, there can hide the most extraordinary superpower of all: a fresh start."
+   ],
+   pull:"When life falls apart, one little jellyfish simply begins again — from the very start.",
+   spark:"Because they can hitchhike in ships' ballast water and keep resetting, these jellyfish have quietly spread to oceans all over the world.",
+   takeaway:"You are allowed to begin again. A reset isn't failure — sometimes it's the most natural thing alive."},
+
+  {cat:"fun",emoji:"🌬️",title:"You are breathing history",who:"The Air You Share",
+   body:[
+     "Take a deep breath. Here's something staggering that just happened: statistically, some of the air molecules you inhaled were once breathed by people who lived thousands of years ago.",
+     "Air mixes and travels endlessly around the whole planet. Over centuries, a single breath spreads across the entire atmosphere. So the same molecules that filled the lungs of ancient explorers, kind strangers, and great thinkers now fill yours.",
+     "Every breath quietly links you to every human who has ever lived — one shared, invisible ocean of air wrapped around the world."
+   ],
+   pull:"The air in your lungs right now has travelled the whole Earth — and touched almost everyone who ever lived.",
+   spark:"That same restless mixing is why a volcano on one side of the planet can paint sunsets red on the other.",
+   takeaway:"You're more connected to the rest of humanity than you feel. Breathe — you're part of one enormous, ancient whole."}
+];
+
+/* ---------- Motivational words ---------- */
+const WORDS = [
+  {w:"Sonder",e:"🌍",d:"The quiet realisation that every stranger is living a life as vivid as your own."},
+  {w:"Sisu",e:"🔥",d:"A Finnish word for extraordinary grit — pushing on long after you thought you were done."},
+  {w:"Ikigai",e:"🌅",d:"Japanese for 'a reason to get up in the morning' — the joy of a life with purpose."},
+  {w:"Eudaimonia",e:"✨",d:"An ancient Greek idea: the deep flourishing that comes from living well, not just feeling good."},
+  {w:"Meraki",e:"🎨",d:"Greek — to do something with soul, love, and every bit of yourself poured in."},
+  {w:"Fernweh",e:"🧭",d:"German for 'far-sickness' — an aching, joyful longing for places you've never been."},
+  {w:"Firgun",e:"💛",d:"Hebrew — pure, ungrudging delight at someone else's success or good fortune."},
+  {w:"Gökotta",e:"🐦",d:"Swedish — waking at dawn just to go outside and hear the first birds sing."},
+  {w:"Wabi-sabi",e:"🍂",d:"Japanese — finding beauty in things imperfect, humble, and wonderfully unfinished."},
+  {w:"Kaizen",e:"📈",d:"Japanese — the quiet power of tiny improvements made every single day."},
+  {w:"Ubuntu",e:"🤝",d:"A Southern African idea: 'I am because we are.' We rise together."},
+  {w:"Yūgen",e:"🌌",d:"Japanese — a profound, mysterious sense of the beauty and vastness of the universe."},
+  {w:"Mamihlapinatapai",e:"👀",d:"A wordless, hopeful look shared by two people who both wish for the same wonderful thing."},
+  {w:"Apricity",e:"☀️",d:"The warmth of the sun on your skin on a cold winter day. A small, free joy."},
+  {w:"Sprezzatura",e:"🎭",d:"Italian — making something difficult look effortless and graceful."},
+  {w:"Resilire",e:"🌱",d:"The Latin root of 'resilience' — literally, to leap back, to bounce."},
+  {w:"Coddiwomple",e:"🚶",d:"To travel purposefully toward a destination that is, as yet, unknown. Go anyway."},
+  {w:"Vorfreude",e:"🎁",d:"German — the sparkling joy of looking forward to something wonderful."},
+  {w:"Querencia",e:"🏡",d:"Spanish — the place where you feel most safe, strong, and truly yourself."},
+  {w:"Eunoia",e:"💭",d:"Greek for 'beautiful thinking' — a well and healthy mind. The shortest word using all five vowels."}
+];
+
+/* ---------- State + rendering ---------- */
+const $ = id => document.getElementById(id);
+const DAY_MS = 86400000;
+let offset = 0;                       // 0 = today, -1 yesterday, +1 tomorrow
+let activeCat = "all";
+const FAV_KEY = "storyteller_favs_v1";
+
+function todayIndexBase(){
+  // deterministic "day number" so everyone sees the same story on a given date
+  const now = new Date();
+  const utc = Date.UTC(now.getFullYear(), now.getMonth(), now.getDate());
+  return Math.floor(utc / DAY_MS);
+}
+function pool(){
+  return activeCat==="all" ? STORIES.map((s,i)=>i)
+    : STORIES.map((s,i)=>i).filter(i=>STORIES[i].cat===activeCat);
+}
+function currentStoryIndex(){
+  const p = pool();
+  if(!p.length) return 0;
+  const d = todayIndexBase() + offset;
+  return p[((d % p.length)+p.length)%p.length];
+}
+function loadFavs(){ try{return JSON.parse(localStorage.getItem(FAV_KEY))||[]}catch(e){return []} }
+function saveFavs(f){ try{localStorage.setItem(FAV_KEY, JSON.stringify(f))}catch(e){} }
+const storyKey = s => s.cat+"|"+s.title;
+
+function fmtDate(off){
+  const d = new Date(Date.now()+off*DAY_MS);
+  const opt={weekday:"long",month:"long",day:"numeric",year:"numeric"};
+  let label = d.toLocaleDateString(undefined,opt);
+  if(off===0) label = "Today · "+label;
+  else if(off===-1) label = "Yesterday · "+label;
+  else if(off===1) label = "Tomorrow · "+label;
+  return label;
+}
+
+function render(){
+  // date + word of the day
+  $("dateLabel").textContent = fmtDate(offset);
+  const wd = WORDS[(((todayIndexBase()+offset)%WORDS.length)+WORDS.length)%WORDS.length];
+  $("wordEmoji").textContent = wd.e; $("wordVal").textContent = wd.w; $("wordDef").textContent = wd.d;
+
+  // story
+  const idx = currentStoryIndex();
+  const s = STORIES[idx];
+  const cat = CATS[s.cat];
+
+  $("hero").style.background = `linear-gradient(135deg, ${cat.c1}, ${cat.c2})`;
+  $("cat").textContent = catIcon(s.cat)+" "+cat.label;
+  $("emoji").textContent = s.emoji;
+  $("title").textContent = s.title;
+  $("who").textContent = s.who;
+
+  let html = s.body.map(p=>`<p>${p}</p>`).join("");
+  if(s.pull) html += `<div class="pull">${s.pull}</div>`;
+  if(s.spark) html += `<div class="spark"><div class="b">💡</div><div class="t"><b>Spark:</b> ${s.spark}</div></div>`;
+  if(s.takeaway) html += `<div class="takeaway"><div class="b">🌟</div><div>${s.takeaway}</div></div>`;
+  $("storyBody").innerHTML = html;
+
+  // position label
+  const p = pool();
+  $("pos").textContent = (activeCat==="all"?"Story":cat.label) + " · " + (p.indexOf(idx)+1) + " of " + p.length;
+
+  // fav button
+  const favs = loadFavs();
+  const on = favs.includes(storyKey(s));
+  $("favBtn").className = "fav"+(on?" on":"");
+  $("favBtn").textContent = on ? "★ Saved" : "☆ Save story";
+
+  renderFavCount();
+}
+function catIcon(c){return c==="people"?"🔥":c==="history"?"🏛️":c==="geography"?"🌍":"💡"}
+
+function renderFavCount(){ $("favCount").textContent = loadFavs().length; }
+
+function renderFavList(){
+  const favs = loadFavs();
+  const box = $("favList");
+  if(!favs.length){ box.innerHTML = `<div class="favempty">No saved stories yet. Tap ☆ Save on any story you love.</div>`; return; }
+  box.innerHTML = favs.map(k=>{
+    const s = STORIES.find(x=>storyKey(x)===k);
+    if(!s) return "";
+    return `<div class="favrow" data-k="${k}"><span class="e">${s.emoji}</span>
+      <span><div class="tt">${s.title}</div><div class="cc">${catIcon(s.cat)} ${CATS[s.cat].label} · ${s.who}</div></span></div>`;
+  }).join("");
+  [...box.querySelectorAll(".favrow")].forEach(r=>{
+    r.onclick = ()=>{
+      const k = r.dataset.k;
+      const gi = STORIES.findIndex(x=>storyKey(x)===k);
+      // jump: set filter to that story's cat-neutral view and align offset
+      activeCat = "all"; syncChips();
+      alignOffsetTo(gi);
+      render(); window.scrollTo({top:0,behavior:"smooth"});
+    };
+  });
+}
+function alignOffsetTo(globalIdx){
+  // find an offset (within a reasonable window) whose currentStoryIndex == globalIdx
+  const base = todayIndexBase();
+  for(let o=0;o<STORIES.length;o++){
+    const d=base+o, p=STORIES.map((s,i)=>i);
+    if(p[((d%p.length)+p.length)%p.length]===globalIdx){offset=o;return;}
+  }
+}
+function syncChips(){
+  [...document.querySelectorAll(".chip")].forEach(c=>c.classList.toggle("on", c.dataset.c===activeCat));
+}
+
+/* ---------- Events ---------- */
+$("prevBtn").onclick = ()=>{ offset--; render(); };
+$("nextBtn").onclick = ()=>{ offset++; render(); };
+$("randBtn").onclick = ()=>{
+  const p = pool();
+  const cur = currentStoryIndex();
+  if(p.length>1){
+    // land on a different story than the current one
+    let target = cur;
+    while(target===cur){ offset += 1 + Math.floor(Math.random()*(p.length-1)); target = currentStoryIndex(); }
+  }
+  render(); window.scrollTo({top:0,behavior:"smooth"});
+};
+$("favBtn").onclick = ()=>{
+  const s = STORIES[currentStoryIndex()];
+  const favs = loadFavs(); const k = storyKey(s);
+  const i = favs.indexOf(k);
+  if(i>=0) favs.splice(i,1); else favs.push(k);
+  saveFavs(favs); render();
+  if($("favList").classList.contains("show")) renderFavList();
+};
+$("favToggle").onclick = ()=>{
+  const box = $("favList"); box.classList.toggle("show");
+  if(box.classList.contains("show")) renderFavList();
+};
+[...document.querySelectorAll(".chip")].forEach(c=>{
+  c.onclick = ()=>{ activeCat=c.dataset.c; syncChips(); offset=0; render(); };
+});
+
+render();
+</script>
+</body></html>
