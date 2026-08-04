@@ -47,12 +47,16 @@ h1{font-size:23px;margin:0;letter-spacing:-.3px}
 .hero{position:relative;min-height:242px;color:#fff;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
 .hero .scene{position:absolute;inset:0;z-index:0}
 .hero .scene svg{width:100%;height:100%;display:block}
-.hero .scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to top,rgba(22,13,7,.78) 0%,rgba(22,13,7,.30) 40%,rgba(22,13,7,.04) 68%,rgba(22,13,7,0) 100%)}
-.hero .cat{position:absolute;top:15px;left:17px;z-index:2;display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;letter-spacing:.08em;
+.hero .photo{position:absolute;inset:0;z-index:1;width:100%;height:100%;object-fit:cover;display:none}
+.hero .scrim{position:absolute;inset:0;z-index:2;background:linear-gradient(to top,rgba(22,13,7,.80) 0%,rgba(22,13,7,.32) 40%,rgba(22,13,7,.05) 68%,rgba(22,13,7,0) 100%)}
+.hero .cat{position:absolute;top:15px;left:17px;z-index:3;display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;letter-spacing:.08em;
   text-transform:uppercase;background:rgba(0,0,0,.32);padding:5px 11px;border-radius:20px;backdrop-filter:blur(3px);border:1px solid rgba(255,255,255,.18)}
-.hero .emoji{position:absolute;top:13px;right:15px;z-index:2;font-size:24px;width:42px;height:42px;display:grid;place-items:center;
+.hero .emoji{position:absolute;top:13px;right:15px;z-index:3;font-size:24px;width:42px;height:42px;display:grid;place-items:center;
   background:rgba(0,0,0,.30);border-radius:50%;backdrop-filter:blur(3px);border:1px solid rgba(255,255,255,.2)}
-.hero .htext{position:relative;z-index:2;padding:0 26px 20px}
+.hero .credit{position:absolute;bottom:5px;right:9px;z-index:3;font-size:9.5px;color:rgba(255,255,255,.7);text-decoration:none;
+  background:rgba(0,0,0,.28);padding:2px 7px;border-radius:9px;display:none}
+.hero .credit:hover{color:#fff}
+.hero .htext{position:relative;z-index:3;padding:0 26px 20px}
 .hero h2{margin:0 0 5px;font-size:27px;line-height:1.16;letter-spacing:-.4px;text-shadow:0 2px 14px rgba(0,0,0,.5);text-wrap:balance}
 .hero .who{font-size:14px;opacity:.96;font-weight:700;text-shadow:0 1px 9px rgba(0,0,0,.55)}
 .body{padding:22px 26px 8px}
@@ -181,9 +185,11 @@ h1{font-size:23px;margin:0;letter-spacing:-.3px}
   <div class="card">
     <div class="hero" id="hero">
       <div class="scene" id="scene"></div>
+      <img class="photo" id="photo" alt="" referrerpolicy="no-referrer">
       <div class="scrim"></div>
       <span class="cat" id="cat"></span>
       <span class="emoji" id="emoji"></span>
+      <a class="credit" id="credit" target="_blank" rel="noopener">📷 Wikimedia Commons</a>
       <div class="htext"><h2 id="title"></h2><div class="who" id="who"></div></div>
     </div>
     <div class="body" id="storyBody"></div>
@@ -894,6 +900,15 @@ function render(){
 
   $("hero").style.background = `linear-gradient(135deg, ${cat.c1}, ${cat.c2})`;
   $("scene").innerHTML = SCENES[sceneFor(s)] || SCENES.mountain;
+
+  // Real photo on top of the SVG (shows only if it actually loads; else SVG stays).
+  const ph = PHOTOS[s.title], img = $("photo"), cr = $("credit");
+  img.onload = ()=>{ img.style.display="block"; cr.style.display="block"; };
+  img.onerror = ()=>{ img.style.display="none"; cr.style.display="none"; };
+  img.style.display="none"; cr.style.display="none";
+  if(ph){ img.alt=s.title; cr.href=photoPage(ph); img.src=photoUrl(ph); }
+  else { img.removeAttribute("src"); }
+
   $("cat").textContent = catIcon(s.cat)+" "+cat.label;
   $("emoji").textContent = s.emoji;
   $("title").textContent = s.title;
@@ -1140,6 +1155,32 @@ const ART = {
 };
 const CAT_FALLBACK = {people:"mountain",history:"book",geography:"mountain",fun:"sky"};
 function sceneFor(s){ return ART[s.title] || CAT_FALLBACK[s.cat] || "mountain"; }
+
+/* ---------- Real photos (loaded from Wikimedia Commons in a live browser; ----------
+   fall back automatically to the SVG scene if blocked/offline/not found).
+   Values are Wikimedia Commons file names, served via the stable Special:FilePath endpoint. */
+const PHOTOS = {
+  "The lost city in the clouds":"Machu Picchu, Peru.jpg",
+  "The mountain that is still growing":"Mount Everest as seen from Drukair2 PLW edit.jpg",
+  "The sky that dances in colour":"Polarlicht 2.jpg",
+  "You are made of exploded stars":"Crab Nebula.jpg",
+  "The planet where a day is longer than a year":"Venus-real color.jpg",
+  "Three hearts and blue blood":"Octopus vulgaris 2.jpg",
+  "The most alien island on Earth":"Socotra dragon tree.JPG",
+  "The math that flew us to the Moon":"Katherine Johnson at NASA, in 1966.jpg",
+  "The clerk who dreamed in numbers":"Srinivasa Ramanujan - OPC - 1.jpg",
+  "The dream that reached the stars":"A. P. J. Abdul Kalam.jpg",
+  "The girl from Karnal who touched space":"Kalpana Chawla, NASA photo portrait in orange suit.jpg",
+  "The only person to win Nobels in two sciences":"Marie Curie c. 1920s.jpg",
+  "27 years, and not a drop of hatred":"Nelson Mandela 1994.jpg",
+  "The girl who lived among the chimps":"Jane Goodall 2015.jpg",
+  "The waterfall that touches the clouds":"Salto Ángel-Canaima-Venezuela08.JPG",
+  "The oldest, deepest lake alive":"Lake Baikal.jpg",
+  "When the Sahara was green":"Sahara desert.jpg",
+  "The land of fire and ice":"Iceland volcano.jpg"
+};
+function photoUrl(file){ return "https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(file)+"?width=1000"; }
+function photoPage(file){ return "https://commons.wikimedia.org/wiki/File:"+encodeURIComponent(file); }
 
 render();
 renderJournal();
