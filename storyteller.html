@@ -44,12 +44,17 @@ h1{font-size:23px;margin:0;letter-spacing:-.3px}
 /* Story card */
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;
   box-shadow:0 10px 34px rgba(70,40,20,.10)}
-.hero{padding:26px 26px 20px;color:#fff;position:relative}
-.hero .cat{display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;letter-spacing:.08em;
-  text-transform:uppercase;background:rgba(255,255,255,.22);padding:5px 11px;border-radius:20px;backdrop-filter:blur(2px)}
-.hero h2{margin:13px 0 4px;font-size:27px;line-height:1.18;letter-spacing:-.4px}
-.hero .who{font-size:14px;opacity:.94;font-weight:600}
-.hero .emoji{position:absolute;top:20px;right:22px;font-size:40px;filter:drop-shadow(0 3px 6px rgba(0,0,0,.2))}
+.hero{position:relative;min-height:242px;color:#fff;overflow:hidden;display:flex;flex-direction:column;justify-content:flex-end}
+.hero .scene{position:absolute;inset:0;z-index:0}
+.hero .scene svg{width:100%;height:100%;display:block}
+.hero .scrim{position:absolute;inset:0;z-index:1;background:linear-gradient(to top,rgba(22,13,7,.78) 0%,rgba(22,13,7,.30) 40%,rgba(22,13,7,.04) 68%,rgba(22,13,7,0) 100%)}
+.hero .cat{position:absolute;top:15px;left:17px;z-index:2;display:inline-flex;align-items:center;gap:7px;font-size:11.5px;font-weight:800;letter-spacing:.08em;
+  text-transform:uppercase;background:rgba(0,0,0,.32);padding:5px 11px;border-radius:20px;backdrop-filter:blur(3px);border:1px solid rgba(255,255,255,.18)}
+.hero .emoji{position:absolute;top:13px;right:15px;z-index:2;font-size:24px;width:42px;height:42px;display:grid;place-items:center;
+  background:rgba(0,0,0,.30);border-radius:50%;backdrop-filter:blur(3px);border:1px solid rgba(255,255,255,.2)}
+.hero .htext{position:relative;z-index:2;padding:0 26px 20px}
+.hero h2{margin:0 0 5px;font-size:27px;line-height:1.16;letter-spacing:-.4px;text-shadow:0 2px 14px rgba(0,0,0,.5);text-wrap:balance}
+.hero .who{font-size:14px;opacity:.96;font-weight:700;text-shadow:0 1px 9px rgba(0,0,0,.55)}
 .body{padding:22px 26px 8px}
 .body p{margin:0 0 15px;font-size:16px}
 .pull{border-left:4px solid var(--accent);background:#fff7f3;border-radius:0 12px 12px 0;
@@ -175,10 +180,11 @@ h1{font-size:23px;margin:0;letter-spacing:-.3px}
   <!-- Story card -->
   <div class="card">
     <div class="hero" id="hero">
+      <div class="scene" id="scene"></div>
+      <div class="scrim"></div>
       <span class="cat" id="cat"></span>
       <span class="emoji" id="emoji"></span>
-      <h2 id="title"></h2>
-      <div class="who" id="who"></div>
+      <div class="htext"><h2 id="title"></h2><div class="who" id="who"></div></div>
     </div>
     <div class="body" id="storyBody"></div>
     <div class="foot">
@@ -887,6 +893,7 @@ function render(){
   const cat = CATS[s.cat];
 
   $("hero").style.background = `linear-gradient(135deg, ${cat.c1}, ${cat.c2})`;
+  $("scene").innerHTML = SCENES[sceneFor(s)] || SCENES.mountain;
   $("cat").textContent = catIcon(s.cat)+" "+cat.label;
   $("emoji").textContent = s.emoji;
   $("title").textContent = s.title;
@@ -1043,6 +1050,96 @@ function addRead(){
 }
 $("rAdd").onclick = addRead;
 $("rInput").addEventListener("keydown", e=>{ if(e.key==="Enter") addRead(); });
+
+/* ---------- Scene illustrations (self-contained SVG, no external assets) ---------- */
+const svg = inner => `<svg viewBox="0 0 800 300" preserveAspectRatio="xMidYMid slice" xmlns="http://www.w3.org/2000/svg">${inner}</svg>`;
+const stars = (n,seed) => { let o=""; for(let i=0;i<n;i++){ const x=((i*97+seed*13)%790)+5, y=((i*53+seed*29)%150)+8, r=((i+seed)%3)*0.6+0.7; o+=`<circle cx="${x}" cy="${y}" r="${r}" fill="#fff" opacity="${0.5+((i)%4)*0.12}"/>`; } return o; };
+
+const SCENES = {
+  mountain: svg(`<defs><linearGradient id="mt_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#6b93c4"/><stop offset="1" stop-color="#dfe9f4"/></linearGradient></defs><rect width="800" height="300" fill="url(#mt_s)"/><circle cx="650" cy="78" r="40" fill="#fff" opacity=".9"/><polygon points="0,300 150,150 300,300" fill="#4a6892"/><polygon points="120,300 360,90 600,300" fill="#33507a"/><polygon points="360,90 405,160 315,160" fill="#eef4fb"/><polygon points="470,300 690,140 800,250 800,300" fill="#3f5d89"/><polygon points="0,300 120,190 250,300" fill="#557299"/>`),
+
+  space: svg(`<defs><linearGradient id="sp_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#080d2b"/><stop offset="1" stop-color="#2a1f52"/></linearGradient><radialGradient id="sp_p" cx="0.4" cy="0.35"><stop offset="0" stop-color="#f2b96b"/><stop offset="1" stop-color="#b76a2c"/></radialGradient></defs><rect width="800" height="300" fill="url(#sp_s)"/>${stars(26,1)}<ellipse cx="600" cy="150" rx="150" ry="30" fill="none" stroke="#e7c79a" stroke-width="7" opacity=".55"/><circle cx="600" cy="150" r="72" fill="url(#sp_p)"/><ellipse cx="600" cy="150" rx="150" ry="30" fill="none" stroke="#f6dcb3" stroke-width="4" opacity=".8"/>`),
+
+  stardust: svg(`<defs><radialGradient id="sd_s" cx="0.5" cy="0.4"><stop offset="0" stop-color="#3a2a63"/><stop offset="1" stop-color="#0a0a24"/></radialGradient></defs><rect width="800" height="300" fill="url(#sd_s)"/>${stars(40,7)}<circle cx="400" cy="140" r="120" fill="#7d5cc0" opacity=".18"/><circle cx="400" cy="140" r="70" fill="#c48fe6" opacity=".18"/>`),
+
+  ocean: svg(`<defs><linearGradient id="oc_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2aa7c4"/><stop offset="1" stop-color="#0b4a73"/></linearGradient></defs><rect width="800" height="300" fill="url(#oc_s)"/><polygon points="120,0 260,300 60,300" fill="#8fe0ef" opacity=".18"/><polygon points="420,0 520,300 340,300" fill="#8fe0ef" opacity=".14"/><g fill="#eafcff"><circle cx="150" cy="210" r="6" opacity=".5"/><circle cx="180" cy="170" r="4" opacity=".45"/><circle cx="640" cy="120" r="5" opacity=".5"/><circle cx="670" cy="90" r="3" opacity=".4"/></g><path d="M540,190 q30,-26 60,0 q30,26 60,0 v40 q-30,20 -60,0 q-30,-20 -60,0 z" fill="#0a3a5c" opacity=".55"/>`),
+
+  deepsea: svg(`<defs><linearGradient id="ds_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#08325a"/><stop offset="1" stop-color="#03101f"/></linearGradient></defs><rect width="800" height="300" fill="url(#ds_s)"/><g fill="#4fe6d6"><circle cx="120" cy="90" r="3" opacity=".9"/><circle cx="240" cy="160" r="2.5" opacity=".8"/><circle cx="380" cy="70" r="3.5" opacity=".9"/><circle cx="520" cy="140" r="2.5" opacity=".8"/><circle cx="660" cy="80" r="3" opacity=".9"/><circle cx="700" cy="190" r="2.5" opacity=".7"/><circle cx="60" cy="200" r="2.5" opacity=".7"/></g><g opacity=".85"><path d="M400,120 q34,0 34,40 q0,26 -14,44 q-20,-6 -20,-30 q0,24 -20,30 q-14,-18 -14,-44 q0,-40 34,-40z" fill="#63d9ff" opacity=".5"/><g stroke="#63d9ff" stroke-width="2" opacity=".45"><path d="M388,204 q-4,40 -10,64"/><path d="M400,206 v66"/><path d="M412,204 q4,40 10,64"/></g></g>`),
+
+  forest: svg(`<defs><linearGradient id="fo_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe6c8"/><stop offset="1" stop-color="#e8f5ea"/></linearGradient></defs><rect width="800" height="300" fill="url(#fo_s)"/><circle cx="120" cy="70" r="34" fill="#fff3c9" opacity=".8"/><g fill="#2f7a4f"><polygon points="200,300 200,130 250,300"/><polygon points="200,130 150,300 200,300"/></g><g><rect x="300" y="180" width="16" height="120" fill="#7a5230"/><circle cx="308" cy="150" r="60" fill="#3f9463"/><circle cx="270" cy="175" r="40" fill="#358457"/><circle cx="348" cy="172" r="44" fill="#4aa06f"/></g><g><rect x="560" y="200" width="14" height="100" fill="#7a5230"/><circle cx="567" cy="175" r="48" fill="#358457"/><circle cx="600" cy="190" r="36" fill="#3f9463"/></g>`),
+
+  running: svg(`<defs><linearGradient id="ru_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd59e"/><stop offset="1" stop-color="#ff9d6b"/></linearGradient></defs><rect width="800" height="300" fill="url(#ru_s)"/><circle cx="640" cy="80" r="46" fill="#fff2d6" opacity=".85"/><rect x="0" y="210" width="800" height="90" fill="#c65b3a"/><g stroke="#ffd7c4" stroke-width="4" stroke-dasharray="34 26"><line x1="0" y1="238" x2="800" y2="238"/><line x1="0" y1="270" x2="800" y2="270"/></g><g fill="#2b1a12"><circle cx="330" cy="150" r="15"/><path d="M322,166 l24,10 l16,28 l-14,8 l-14,-24 l-22,-6z"/><path d="M340,180 l30,-4 l-6,-16 l-26,4z"/><path d="M330,200 l-18,30 l14,8 l20,-30z"/><path d="M356,196 l22,26 l-12,10 l-24,-28z"/></g>`),
+
+  desert: svg(`<defs><linearGradient id="de_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6c98a"/><stop offset="1" stop-color="#e88a4e"/></linearGradient></defs><rect width="800" height="300" fill="url(#de_s)"/><circle cx="180" cy="90" r="50" fill="#fff0d0" opacity=".85"/><polygon points="520,300 640,150 760,300" fill="#c96a34"/><polygon points="640,150 640,300 760,300" fill="#b25a2a"/><path d="M0,240 q200,-40 400,0 t400,0 v60 H0z" fill="#d97b3c"/><path d="M0,275 q200,-30 400,0 t400,0 v25 H0z" fill="#c76a30"/>`),
+
+  waterfall: svg(`<defs><linearGradient id="wf_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#a9d8b0"/><stop offset="1" stop-color="#4f9e78"/></linearGradient></defs><rect width="800" height="300" fill="url(#wf_s)"/><polygon points="0,0 300,0 340,300 0,300" fill="#3d6f57"/><polygon points="800,0 520,0 470,300 800,300" fill="#356048"/><g fill="#eef8f4" opacity=".92"><rect x="350" y="0" width="30" height="300"/><rect x="392" y="0" width="20" height="300" opacity=".8"/><rect x="424" y="0" width="26" height="300"/><rect x="462" y="0" width="16" height="300" opacity=".7"/></g><ellipse cx="405" cy="288" rx="120" ry="24" fill="#dff0ea" opacity=".7"/>`),
+
+  island: svg(`<defs><linearGradient id="is_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fd2e6"/><stop offset="0.6" stop-color="#57b6d6"/><stop offset="0.6" stop-color="#2b83b0"/><stop offset="1" stop-color="#1c6690"/></linearGradient></defs><rect width="800" height="300" fill="url(#is_s)"/><circle cx="650" cy="70" r="36" fill="#fff6df" opacity=".8"/><ellipse cx="400" cy="210" rx="220" ry="34" fill="#caa46a"/><rect x="392" y="120" width="16" height="90" fill="#6e4a2b"/><path d="M400,120 q-70,-4 -110,26 q60,-6 110,10 q50,-16 110,-10 q-40,-30 -110,-26z" fill="#3f7d4e"/><path d="M400,130 q-46,-2 -74,18 q40,-4 74,8 q34,-12 74,-8 q-28,-20 -74,-18z" fill="#4d9160"/>`),
+
+  saltflat: svg(`<defs><linearGradient id="sf_a" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd8c2"/><stop offset="1" stop-color="#ff9ec4"/></linearGradient><linearGradient id="sf_b" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ff9ec4"/><stop offset="1" stop-color="#c76aa0"/></linearGradient></defs><rect width="800" height="150" fill="url(#sf_a)"/><rect y="150" width="800" height="150" fill="url(#sf_b)"/><circle cx="560" cy="96" r="40" fill="#fff0d8" opacity=".9"/><circle cx="560" cy="204" r="40" fill="#ffd9ea" opacity=".5"/><rect y="148" width="800" height="4" fill="#fff" opacity=".6"/><g stroke="#fff" stroke-width="1" opacity=".25"><line x1="0" y1="150" x2="120" y2="300"/><line x1="800" y1="150" x2="680" y2="300"/><line x1="400" y1="150" x2="400" y2="300"/></g>`),
+
+  lake: svg(`<defs><linearGradient id="lk_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#cfe9f2"/><stop offset="0.55" stop-color="#e9f6fa"/><stop offset="0.55" stop-color="#7db9d4"/><stop offset="1" stop-color="#3f7f9e"/></linearGradient></defs><rect width="800" height="300" fill="url(#lk_s)"/><polygon points="120,165 260,60 400,165" fill="#8aa7b8"/><polygon points="260,60 300,110 220,110" fill="#fff"/><polygon points="380,165 540,80 700,165" fill="#9fb8c6"/><polygon points="540,80 575,120 505,120" fill="#fff"/><g opacity=".4"><polygon points="120,165 260,270 400,165" fill="#6c93a6"/><polygon points="380,165 540,250 700,165" fill="#7ea0b0"/></g>`),
+
+  aurora: svg(`<defs><linearGradient id="au_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#0a1436"/><stop offset="1" stop-color="#122a4a"/></linearGradient></defs><rect width="800" height="300" fill="url(#au_s)"/>${stars(22,3)}<path d="M0,120 q200,-70 400,-10 t400,-20 v70 q-200,50 -400,10 T0,190z" fill="#3fe0a6" opacity=".38"/><path d="M0,150 q200,-50 400,0 t400,-30 v60 q-200,50 -400,0 T0,210z" fill="#7c6cf0" opacity=".33"/><path d="M0,100 q200,-40 400,-30 t400,0 v40 q-200,40 -400,20 T0,150z" fill="#5fe0d0" opacity=".28"/><polygon points="0,300 0,250 800,270 800,300" fill="#050a1c"/>`),
+
+  volcano: svg(`<defs><linearGradient id="vo_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a1436"/><stop offset="1" stop-color="#5a2438"/></linearGradient></defs><rect width="800" height="300" fill="url(#vo_s)"/><circle cx="150" cy="80" r="30" fill="#ffd9a0" opacity=".55"/><polygon points="360,300 540,110 720,300" fill="#2b1622"/><polygon points="540,110 500,170 580,170" fill="#ff7a3c"/><path d="M540,110 q-8,-40 8,-70 q10,26 24,40 q-14,10 -32,30z" fill="#ff9d4d" opacity=".8"/><polygon points="540,170 512,300 568,300" fill="#e2522a" opacity=".85"/><polygon points="0,300 160,180 320,300" fill="#e8eef4" opacity=".9"/>`),
+
+  bridge: svg(`<defs><linearGradient id="br_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#bfe3c4"/><stop offset="1" stop-color="#5c9e72"/></linearGradient></defs><rect width="800" height="300" fill="url(#br_s)"/><rect x="0" y="230" width="800" height="70" fill="#3f7d57"/><rect x="60" y="120" width="40" height="180" fill="#6b4a2e"/><rect x="700" y="120" width="40" height="180" fill="#6b4a2e"/><path d="M80,150 q320,120 640,0" fill="none" stroke="#7a5433" stroke-width="12"/><path d="M80,120 q320,150 640,0" fill="none" stroke="#8a613c" stroke-width="8"/><g stroke="#7a5433" stroke-width="4"><line x1="180" y1="139" x2="180" y2="176"/><line x1="300" y1="153" x2="300" y2="190"/><line x1="420" y1="156" x2="420" y2="193"/><line x1="540" y1="150" x2="540" y2="187"/><line x1="640" y1="135" x2="640" y2="172"/></g>`),
+
+  book: svg(`<defs><linearGradient id="bk_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#3a2c62"/><stop offset="1" stop-color="#6b4a86"/></linearGradient></defs><rect width="800" height="300" fill="url(#bk_s)"/><g opacity=".9"><path d="M400,90 C330,60 250,66 210,92 V230 C250,206 330,200 400,228 Z" fill="#f3e4c6"/><path d="M400,90 C470,60 550,66 590,92 V230 C550,206 470,200 400,228 Z" fill="#e9d7b2"/><line x1="400" y1="90" x2="400" y2="228" stroke="#b89a63" stroke-width="3"/><g stroke="#b89a63" stroke-width="2" opacity=".7"><line x1="245" y1="120" x2="370" y2="128"/><line x1="245" y1="145" x2="370" y2="153"/><line x1="245" y1="170" x2="370" y2="178"/><line x1="430" y1="128" x2="555" y2="120"/><line x1="430" y1="153" x2="555" y2="145"/><line x1="430" y1="178" x2="555" y2="170"/></g></g>`),
+
+  numbers: svg(`<defs><linearGradient id="nu_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#14264f"/><stop offset="1" stop-color="#28356e"/></linearGradient></defs><rect width="800" height="300" fill="url(#nu_s)"/><g fill="#8fb4ff" font-family="Georgia,serif" font-style="italic" opacity=".85"><text x="70" y="110" font-size="60">π</text><text x="190" y="200" font-size="44">∞</text><text x="300" y="90" font-size="40">Σ</text><text x="400" y="180" font-size="70" font-weight="bold" fill="#ffd27a">0</text><text x="500" y="110" font-size="46">√</text><text x="600" y="200" font-size="42">≈</text><text x="690" y="120" font-size="50">∫</text><text x="140" y="260" font-size="34" opacity=".6">1729</text><text x="520" y="250" font-size="30" opacity=".6">e=</text></g>`),
+
+  gears: svg(`<defs><linearGradient id="ge_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7a5a2e"/><stop offset="1" stop-color="#3f2e16"/></linearGradient></defs><rect width="800" height="300" fill="url(#ge_s)"/><g fill="none" stroke="#e6b866" stroke-width="10" opacity=".9"><circle cx="300" cy="150" r="80"/><circle cx="300" cy="150" r="30"/></g><g stroke="#e6b866" stroke-width="12">${Array.from({length:12},(_,i)=>{const a=i*30*Math.PI/180;return `<line x1="${300+Math.cos(a)*80}" y1="${150+Math.sin(a)*80}" x2="${300+Math.cos(a)*98}" y2="${150+Math.sin(a)*98}"/>`}).join("")}</g><g fill="none" stroke="#c99a4e" stroke-width="8" opacity=".85"><circle cx="500" cy="120" r="52"/><circle cx="500" cy="120" r="20"/></g><g stroke="#c99a4e" stroke-width="9">${Array.from({length:9},(_,i)=>{const a=i*40*Math.PI/180;return `<line x1="${500+Math.cos(a)*52}" y1="${120+Math.sin(a)*52}" x2="${500+Math.cos(a)*66}" y2="${120+Math.sin(a)*66}"/>`}).join("")}</g>`),
+
+  horse: svg(`<defs><linearGradient id="ho_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f4c98a"/><stop offset="1" stop-color="#d98a52"/></linearGradient></defs><rect width="800" height="300" fill="url(#ho_s)"/><circle cx="120" cy="80" r="40" fill="#fff0d4" opacity=".8"/><rect x="0" y="240" width="800" height="60" fill="#a9612f"/><g fill="#3a2415"><path d="M360,230 l0,-40 l16,-30 l40,-16 l40,4 l30,-18 l6,14 l-18,18 l14,40 l-16,4 l-12,-34 l-30,10 l10,52 l-16,0 l-8,-48 l-30,6 l4,42 l-16,0 l-2,-40z"/><path d="M470,120 l30,-20 l4,14 l-20,14z"/></g><g stroke="#5a3a22" stroke-width="3" opacity=".5"><line x1="200" y1="210" x2="330" y2="215"/><line x1="180" y1="230" x2="300" y2="232"/></g>`),
+
+  camera: svg(`<defs><linearGradient id="ca_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#5a4632"/><stop offset="1" stop-color="#2e2317"/></linearGradient></defs><rect width="800" height="300" fill="url(#ca_s)"/><g fill="#c9a35e" opacity=".95"><rect x="300" y="150" width="80" height="90" rx="6"/><path d="M380,165 l90,-30 v120 l-90,-30z"/><rect x="470" y="120" width="60" height="90" rx="6"/><circle cx="500" cy="165" r="26" fill="#3a2e1c"/><circle cx="500" cy="165" r="14" fill="#8f7038"/></g><g fill="none" stroke="#b8934f" stroke-width="3" opacity=".5">${Array.from({length:6},(_,i)=>`<line x1="530" y1="165" x2="${560+i*30}" y2="${120+i*16}"/>`).join("")}</g><rect x="290" y="240" width="250" height="10" rx="4" fill="#1c150c"/>`),
+
+  flight: svg(`<defs><linearGradient id="fl_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#8fc7f0"/><stop offset="1" stop-color="#d8ecfa"/></linearGradient></defs><rect width="800" height="300" fill="url(#fl_s)"/><g fill="#fff" opacity=".85"><ellipse cx="180" cy="90" rx="70" ry="30"/><ellipse cx="240" cy="100" rx="50" ry="24"/><ellipse cx="600" cy="200" rx="80" ry="30"/></g><g fill="#324a63"><path d="M430,150 l120,-14 l30,10 l-24,16 l-110,4z"/><path d="M470,132 l30,-30 l14,6 l-14,26z"/><path d="M470,160 l26,30 l14,-6 l-12,-26z"/><rect x="360" y="150" width="80" height="8" rx="4"/></g><path d="M300,158 q40,-6 60,-4" stroke="#fff" stroke-width="4" fill="none" opacity=".7" stroke-dasharray="10 10"/>`),
+
+  art: svg(`<defs><linearGradient id="ar_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f6ddb0"/><stop offset="1" stop-color="#e7b6c9"/></linearGradient></defs><rect width="800" height="300" fill="url(#ar_s)"/><g fill="#8a5a34"><rect x="330" y="70" width="140" height="150" rx="4" fill="#fff8ec"/><rect x="322" y="66" width="156" height="12" rx="4"/><rect x="360" y="220" width="12" height="70" transform="rotate(12 366 255)"/><rect x="430" y="220" width="12" height="70" transform="rotate(-12 436 255)"/><rect x="395" y="60" width="12" height="70"/></g><g><circle cx="390" cy="120" r="20" fill="#e2603f"/><rect x="420" y="150" width="34" height="34" fill="#3f83c4" transform="rotate(12 437 167)"/><path d="M360,180 q20,-30 44,0z" fill="#4aa06f"/></g><ellipse cx="620" cy="210" rx="60" ry="40" fill="#c98a52"/><circle cx="600" cy="200" r="8" fill="#e2603f"/><circle cx="628" cy="196" r="8" fill="#3f83c4"/><circle cx="642" cy="220" r="8" fill="#f2b03d"/><circle cx="600" cy="224" r="8" fill="#4aa06f"/>`),
+
+  lab: svg(`<defs><linearGradient id="la_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#2a6a6e"/><stop offset="1" stop-color="#143c46"/></linearGradient></defs><rect width="800" height="300" fill="url(#la_s)"/><g fill="none" stroke="#7fe6d0" stroke-width="3" opacity=".8"><ellipse cx="560" cy="120" rx="120" ry="46"/><ellipse cx="560" cy="120" rx="120" ry="46" transform="rotate(60 560 120)"/><ellipse cx="560" cy="120" rx="120" ry="46" transform="rotate(-60 560 120)"/></g><circle cx="560" cy="120" r="14" fill="#ffe08a"/><g><path d="M300,90 l0,50 l-40,90 a10,10 0 0 0 9,15 l102,0 a10,10 0 0 0 9,-15 l-40,-90 l0,-50z" fill="#bfeee4" opacity=".85"/><path d="M280,205 l100,0 l24,55 a10,10 0 0 1 -9,15 l-130,0 a10,10 0 0 1 -9,-15z" fill="#3fd0b0" opacity=".9"/><rect x="292" y="78" width="56" height="14" rx="4" fill="#bfeee4"/></g>`),
+
+  peace: svg(`<defs><linearGradient id="pe_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#f3c98a"/><stop offset="1" stop-color="#f6e3c2"/></linearGradient></defs><rect width="800" height="300" fill="url(#pe_s)"/><circle cx="620" cy="90" r="50" fill="#fff4dc" opacity=".8"/><g fill="#fff"><path d="M320,150 q40,-50 110,-40 q-10,-24 20,-40 q6,26 -6,44 q40,10 54,44 q-30,-14 -60,-8 q10,30 -14,54 q-8,-30 -24,-44 q-40,10 -76,-6 q30,-4 42,-16 q-40,-6 -46,-30z" opacity=".95"/><circle cx="342" cy="140" r="4" fill="#3a2c1c"/></g><g stroke="#4aa06f" stroke-width="4" fill="none"><path d="M300,200 q30,10 70,6"/></g><g fill="#4aa06f"><ellipse cx="330" cy="198" rx="9" ry="4"/><ellipse cx="352" cy="204" rx="9" ry="4"/></g>`),
+
+  bee: svg(`<defs><linearGradient id="be_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#ffd86b"/><stop offset="1" stop-color="#f2a83d"/></linearGradient></defs><rect width="800" height="300" fill="url(#be_s)"/><g fill="none" stroke="#e69420" stroke-width="6" opacity=".55">${(()=>{let o="";const s=46;for(let r=0;r<4;r++)for(let c=0;c<9;c++){const x=520+c*s*0.87,y=40+r*s+(c%2?s/2:0);o+=`<polygon points="${x},${y-s/2} ${x+s*0.43},${y-s/4} ${x+s*0.43},${y+s/4} ${x},${y+s/2} ${x-s*0.43},${y+s/4} ${x-s*0.43},${y-s/4}" fill="#ffcf5a"/>`;}return o;})()}</g><g><ellipse cx="250" cy="150" rx="60" ry="42" fill="#3a2a12"/><path d="M210,120 a60,42 0 0 1 80,0z" fill="#f2c33d"/><path d="M198,150 h104" stroke="#f2c33d" stroke-width="12"/><ellipse cx="300" cy="150" rx="16" ry="20" fill="#2a1e0c"/><ellipse cx="230" cy="118" rx="34" ry="20" fill="#fff" opacity=".7"/><ellipse cx="272" cy="118" rx="30" ry="18" fill="#fff" opacity=".7"/></g>`),
+
+  micro: svg(`<defs><radialGradient id="mi_s" cx="0.5" cy="0.4"><stop offset="0" stop-color="#153a5c"/><stop offset="1" stop-color="#061224"/></radialGradient></defs><rect width="800" height="300" fill="url(#mi_s)"/>${stars(30,5)}<g><ellipse cx="400" cy="160" rx="130" ry="80" fill="#8fb8d6" opacity=".9"/><ellipse cx="360" cy="140" rx="34" ry="24" fill="#c9e3f2" opacity=".8"/><g stroke="#5a86a6" stroke-width="14" stroke-linecap="round"><line x1="300" y1="200" x2="270" y2="250"/><line x1="340" y1="215" x2="322" y2="270"/><line x1="450" y1="215" x2="470" y2="268"/><line x1="490" y1="200" x2="520" y2="248"/></g><circle cx="470" cy="150" r="10" fill="#0a1a2c"/></g>`),
+
+  fruit: svg(`<defs><linearGradient id="fr_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#eaf6cf"/><stop offset="1" stop-color="#cfe9a8"/></linearGradient></defs><rect width="800" height="300" fill="url(#fr_s)"/><g><path d="M300,120 q40,-30 90,-10 q40,16 60,60 q-70,50 -130,20 q-40,-30 -20,-70z" fill="#f4d24a"/><path d="M300,120 q40,-30 90,-10 q-46,6 -70,40 q-16,20 -20,20 q-20,-30 0,-50z" fill="#ffe27a"/><path d="M300,120 l-8,-16 l8,-2 l6,14z" fill="#5a4020"/></g><g><circle cx="540" cy="180" r="48" fill="#e2452f"/><path d="M540,138 q10,-16 26,-14 q-6,14 -22,18z" fill="#4aa06f"/><g fill="#ffe8b0">${Array.from({length:10},(_,i)=>{const a=i*36*Math.PI/180;return `<ellipse cx="${540+Math.cos(a)*30}" cy="${180+Math.sin(a)*30}" rx="2.5" ry="4"/>`}).join("")}</g></g>`),
+
+  sky: svg(`<defs><linearGradient id="sk_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#7db6e8"/><stop offset="1" stop-color="#dcefff"/></linearGradient></defs><rect width="800" height="300" fill="url(#sk_s)"/><circle cx="150" cy="90" r="44" fill="#fff6dc" opacity=".85"/><g fill="#fff" opacity=".9"><ellipse cx="560" cy="110" rx="90" ry="34"/><ellipse cx="620" cy="120" rx="60" ry="26"/><ellipse cx="300" cy="200" rx="70" ry="26"/></g><g stroke="#fff" stroke-width="4" fill="none" opacity=".7"><path d="M120,180 q60,-20 120,0 t120,0"/><path d="M420,230 q60,-20 120,0 t120,0"/></g>`),
+
+  polar: svg(`<defs><linearGradient id="po_s" x1="0" y1="0" x2="0" y2="1"><stop offset="0" stop-color="#9fc4dc"/><stop offset="0.6" stop-color="#cfe6f0"/><stop offset="0.6" stop-color="#4f86a8"/><stop offset="1" stop-color="#2c5a78"/></linearGradient></defs><rect width="800" height="300" fill="url(#po_s)"/><polygon points="520,180 600,90 700,180" fill="#eef6fb"/><polygon points="560,180 620,120 690,180" fill="#d8e8f2"/><polygon points="120,190 200,150 280,190 250,210 150,210" fill="#eef6fb"/><g fill="#2a1e14"><rect x="360" y="150" width="90" height="30" rx="6"/><rect x="398" y="110" width="6" height="44"/><path d="M404,116 l40,10 l-40,10z" fill="#c94a2e"/></g>`)
+};
+
+/* ---------- Story → scene mapping ---------- */
+const ART = {
+  "14 peaks in 6 months":"mountain","The woman who planted 50 million trees":"forest","The marathon on one leg":"running",
+  "The math that flew us to the Moon":"space","The greatest survival story ever":"polar","She refused to be told 'no'":"flight",
+  "The four-minute mile that couldn't be run":"running","Her Deepness and the living ocean":"ocean","The painter who started at 78":"art",
+  "Running up mountains for fun":"mountain","The man who carved a road through a mountain":"mountain","The clerk who dreamed in numbers":"numbers",
+  "The dream that reached the stars":"space","She climbed Everest without a leg":"mountain","The Flying Sikh who outran his past":"running",
+  "The girl from Karnal who touched space":"space","27 years, and not a drop of hatred":"peace","The teacher who opened a silent world":"book",
+  "The only person to win Nobels in two sciences":"lab","The girl who lived among the chimps":"forest","She painted her whole world from bed":"art",
+  "The first woman on top of the world":"mountain",
+  "The night the war stopped":"peace","The stone that unlocked a language":"book","The 2,000-year-old computer":"gears",
+  "The empire that ran on horseback":"horse","The first photograph ever taken":"camera","The library that dreamed of everything":"book",
+  "A successful failure in space":"space","The lost city in the clouds":"mountain","The machine that gave everyone a voice":"book",
+  "The number that was nothing — and everything":"numbers",
+  "The mountain that is still growing":"mountain","When the Sahara was green":"desert","The waterfall that touches the clouds":"waterfall",
+  "The deepest place on Earth":"deepsea","The most alien island on Earth":"island","The world's biggest mirror":"saltflat",
+  "The oldest, deepest lake alive":"lake","The sea that glows in the dark":"deepsea","The sky that dances in colour":"aurora",
+  "The hottest, strangest place on Earth":"volcano","The land of fire and ice":"volcano","The bridges you grow instead of build":"bridge",
+  "Three hearts and blue blood":"ocean","The food that never spoils":"bee","The toughest animal in the universe":"micro",
+  "The planet where a day is longer than a year":"space","Bananas are berries, but strawberries aren't":"fruit",
+  "The jellyfish that can rewind death":"deepsea","You are breathing history":"sky","Cleopatra lived closer to us than to the pyramids":"desert",
+  "You are made of exploded stars":"stardust","They hold hands so they don't drift apart":"ocean","The secret internet under the forest":"forest"
+};
+const CAT_FALLBACK = {people:"mountain",history:"book",geography:"mountain",fun:"sky"};
+function sceneFor(s){ return ART[s.title] || CAT_FALLBACK[s.cat] || "mountain"; }
 
 render();
 renderJournal();
