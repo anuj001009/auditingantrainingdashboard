@@ -11,6 +11,12 @@ A standalone, offline-friendly page that serves a new story each day, plus a lig
   - **Geography** — Everest, the green Sahara, Angel Falls, the Mariana Trench, Socotra, the aurora, living root bridges…
   - **Fun Facts** — the octopus, immortal honey, tardigrades, the wood-wide-web, "you are stardust"…
   - Each story carries a pull-quote, a "spark" bonus fact, and a motivational takeaway.
+- **Say it out loud** — a daily appreciation rep. One line a day (42 of them, across
+  *who she is · I saw it · I'd choose you again · in front of others · her guitar ·
+  the invisible work · after a fight · the big one*), each with a short note on **why it
+  lands**, the three delivery rules, a “Another one” shuffle, and an **I said it today**
+  streak. The block on appreciation is almost never a missing feeling — it's a missing
+  rep, so this is built as a practice, not a poster.
 - **Spark word of the day** — 30 uplifting words with meanings (Sisu, Ikigai, Jugaad, Seva…).
 - **Daily Journal** — ☀️ Morning planning and 🌙 Night dump notes, auto-saved per day, with day-to-day navigation.
 - **Up Next** — a personal reading/explore queue (add, check off, remove).

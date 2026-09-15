@@ -7,7 +7,7 @@
   --bg:#fdf7f0; --ink:#241c15; --muted:#7a6a58;
   --card:#ffffff; --line:#efe2d3;
   --accent:#e8663c; --accent2:#f2a03d; --gold:#c98a12;
-  --people:#e8663c; --history:#8a5cd0; --geo:#1f9d76; --fun:#2f7fd8; --word:#c98a12;
+  --people:#e8663c; --history:#8a5cd0; --geo:#1f9d76; --fun:#2f7fd8; --word:#c98a12; --warm:#c2405f; --warm2:#e0728a;
 }
 *{box-sizing:border-box}
 html,body{margin:0}
@@ -40,6 +40,28 @@ h1{font-size:23px;margin:0;letter-spacing:-.3px}
 .word .k{font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;color:var(--gold)}
 .word .v{font-size:18px;font-weight:800;margin:1px 0 2px}
 .word .d{font-size:13px;color:var(--muted)}
+
+/* Say it out loud — appreciation practice */
+.acard{padding:18px 20px 16px}
+.arow{display:flex;align-items:center;gap:9px;margin-bottom:10px;flex-wrap:wrap}
+.atag{font-size:10.5px;font-weight:800;letter-spacing:.11em;text-transform:uppercase;color:#fff;
+  background:linear-gradient(135deg,var(--warm),var(--warm2));padding:4px 11px;border-radius:20px}
+.astreak{margin-left:auto;font-size:12px;font-weight:700;color:var(--muted)}
+.astreak b{color:var(--warm)}
+.aline{font-size:19px;line-height:1.45;font-weight:700;letter-spacing:-.2px;margin:2px 0 11px;text-wrap:balance}
+.awhy{display:flex;gap:11px;align-items:flex-start;background:#fff5f7;border:1px solid #f6dfe5;
+  border-radius:13px;padding:11px 13px;font-size:13px;color:var(--muted);margin-bottom:13px}
+.awhy b{color:var(--warm)}
+.abtns{display:flex;gap:9px;flex-wrap:wrap}
+.abtn{flex:1;min-width:132px;border:1px solid var(--line);background:#fff;border-radius:13px;padding:11px 13px;
+  font-size:13.5px;font-weight:800;cursor:pointer;color:var(--ink);font-family:inherit;transition:.15s}
+.abtn:hover{border-color:var(--warm);color:var(--warm)}
+.abtn.done{background:linear-gradient(135deg,var(--warm),var(--warm2));border-color:transparent;color:#fff;
+  box-shadow:0 6px 16px rgba(194,64,95,.28)}
+.abtn:active{transform:translateY(1px)}
+.arules{margin:13px 0 0;padding:11px 0 0 19px;border-top:1px dashed var(--line)}
+.arules li{font-size:12.5px;color:var(--muted);margin:5px 0}
+.arules b{color:var(--ink)}
 
 /* Story card */
 .card{background:var(--card);border:1px solid var(--line);border-radius:20px;overflow:hidden;
@@ -217,6 +239,27 @@ h1{font-size:23px;margin:0;letter-spacing:-.3px}
 
   <button class="btn ghost" id="favToggle" style="width:100%;margin-top:12px">⭐ My saved stories (<span id="favCount">0</span>)</button>
   <div class="favlist" id="favList"></div>
+
+  <!-- Say it out loud -->
+  <div class="sec-h">💬 Say it out loud <span class="tiny">one line a day · say it, then move on</span></div>
+  <div class="card acard">
+    <div class="arow">
+      <span class="atag" id="aTag"></span>
+      <span class="astreak" id="aStreak"></span>
+    </div>
+    <div class="aline" id="aLine"></div>
+    <div class="awhy"><div>🎯</div><div><b>Why it lands:</b> <span id="aWhy"></span></div></div>
+    <div class="abtns">
+      <button class="abtn" id="aAnother">🔀 Another one</button>
+      <button class="abtn" id="aDone">✓ I said it today</button>
+    </div>
+    <ul class="arules">
+      <li><b>Say it flat</b> — like a fact about the weather, not a question.</li>
+      <li><b>Then don’t wait.</b> No pause, no checking her face. Keep eating.</li>
+      <li><b>If she deflects</b> — “You are. That’s all.” Don’t argue, don’t take it back.</li>
+      <li><b>Specific beats sweet.</b> Detail proves you were watching; adjectives don’t.</li>
+    </ul>
+  </div>
 
   <!-- Daily Journal -->
   <div class="sec-h">📔 Daily Journal <span class="tiny">auto-saved on this device</span></div>
@@ -888,6 +931,7 @@ function fmtDate(off){
 }
 
 function render(){
+  aShuffle = null;               // day changed → back to the line of the day
   // date + word of the day
   $("dateLabel").textContent = fmtDate(offset);
   const wd = WORDS[(((todayIndexBase()+offset)%WORDS.length)+WORDS.length)%WORDS.length];
@@ -931,6 +975,7 @@ function render(){
   $("favBtn").textContent = on ? "★ Saved" : "☆ Save story";
 
   renderFavCount();
+  renderAppreciation();
 }
 function catIcon(c){return c==="people"?"🔥":c==="history"?"🏛️":c==="geography"?"🌍":"💡"}
 
@@ -1181,6 +1226,146 @@ const PHOTOS = {
 };
 function photoUrl(file){ return "https://commons.wikimedia.org/wiki/Special:FilePath/"+encodeURIComponent(file)+"?width=1000"; }
 function photoPage(file){ return "https://commons.wikimedia.org/wiki/File:"+encodeURIComponent(file); }
+
+/* ---------- Say it out loud: a daily appreciation rep ----------
+   Same idea as the word of the day — one line per date, moves with
+   prev/next day. The block on appreciation is almost never a missing
+   feeling; it is a missing rep. So this is a practice, not a poster. */
+const A_CATS = {
+  character:"Who she is",       witness:"I saw it",        choice:"I'd choose you again",
+  publicly:"In front of others", guitar:"Her guitar",      invisible:"The invisible work",
+  repair:"After a fight",        big:"The big one"
+};
+
+const LINES = [
+  {cat:"character", line:"You're the steadiest person I know. I don't think you realise how rare that is.",
+   why:"Names a trait, not a task. A task can be undone by a bad day; who she is can't."},
+  {cat:"witness", line:"That week was brutal and you carried it. I saw what it took.",
+   why:"“I saw” is the whole sentence. She isn't asking to be praised — she's asking to be witnessed."},
+  {cat:"choice", line:"I'd pick you again. Knowing everything. Same choice.",
+   why:"Spoken from choice rather than need — all of the warmth, none of the drop in standing."},
+  {cat:"character", line:"You're not just kind — you're kind when it's inconvenient. That's a completely different thing.",
+   why:"The qualifier proves you actually observed her, rather than reaching for a label."},
+  {cat:"publicly", line:"She's the sharpest person in this room, and she'd never say it herself — so I will.",
+   why:"Public, costly and unprompted. That combination is what makes praise credible."},
+  {cat:"guitar", line:"I love watching you do that. It has nothing to do with me and I still love it.",
+   why:"Praising the thing with no utility says you value the person, not the output."},
+  {cat:"big", line:"You're the best thing that's happened to me. I've been bad at saying it — that's on me, not you.",
+   why:"Naming your own silence is the apology. Say it and stop; don't explain further."},
+  {cat:"witness", line:"I know that wasn't easy for you, and you did it anyway.",
+   why:"Acknowledging the cost, not just the outcome. The cost is the part nobody else sees."},
+  {cat:"character", line:"You have a kind of nerve I don't have. I've watched you walk into things that would have made me stall.",
+   why:"Admitting a gap in yourself makes the praise cost something — which is exactly why it lands."},
+  {cat:"choice", line:"Out of everything I've built, choosing you was the smartest thing I've done.",
+   why:"Puts her inside your own scoring system. Easy for you to say, enormous for her to hear."},
+  {cat:"invisible", line:"Half of what runs in this house runs because you thought of it three days ago.",
+   why:"Names the invisible planning rather than the visible chore. That's the labour nobody thanks."},
+  {cat:"repair", line:"I was wrong, and you were patient with me longer than I deserved.",
+   why:"Appreciation folded into an apology lands twice — it repairs and it honours in one move."},
+  {cat:"witness", line:"I noticed you didn't complain once. I noticed.",
+   why:"The repetition is the point. Being noticed is the entire thing she's asking for."},
+  {cat:"character", line:"You're far tougher than people realise, because you never make it look hard.",
+   why:"Names the thing the world misses. Being seen where nobody else looks is the deepest version."},
+  {cat:"publicly", line:"She held the whole thing together. I mostly just showed up.",
+   why:"Giving away credit in front of other people is the cheapest strength signal there is."},
+  {cat:"big", line:"I'm proud of you. I should say that more than I do.",
+   why:"The sentence most people spend an entire life waiting for. You already know its weight."},
+  {cat:"guitar", line:"You lit up talking about that. I could listen to you talk about it all evening.",
+   why:"Praises her enthusiasm, not her usefulness. Nobody gets complimented for what delights them."},
+  {cat:"choice", line:"I got lucky, and I know I got lucky.",
+   why:"Short, flat, unarguable. Impossible to deflect, which is what makes it stick."},
+  {cat:"character", line:"You read people better than anyone I know. You knew about that before I had a clue.",
+   why:"Praising her judgement says you trust her mind, not only her heart."},
+  {cat:"witness", line:"You were running on nothing today and you still showed up for everyone.",
+   why:"Specific to today. Yesterday's compliment recycled is just wallpaper."},
+  {cat:"invisible", line:"You carry a list in your head I've never once had to look at. I've been taking that for granted.",
+   why:"Admitting the taking-for-granted is what turns it from a compliment into an acknowledgement."},
+  {cat:"repair", line:"You could have said “I told you so” and you didn't. I noticed that.",
+   why:"Praising restraint mid-conflict de-escalates faster than any argument you could win."},
+  {cat:"guitar", line:"That thing you make — it's good. I'd like it even if I didn't know you.",
+   why:"Removes the relationship discount, so she can't wave it away as loyalty."},
+  {cat:"character", line:"You're honest even when it costs you something. That's rarer than you think.",
+   why:"Character praise with evidence built in. Vague virtue-words read as filler."},
+  {cat:"choice", line:"If I had to do the whole thing again from the start, I wouldn't change this part.",
+   why:"Frames her as the deliberate decision, not the thing that happened to you."},
+  {cat:"witness", line:"You handled that with more patience than I could have managed.",
+   why:"Comparison to yourself, honestly made. Not flattery — a measurement."},
+  {cat:"publicly", line:"Ask her, not me. She actually knows what she's talking about.",
+   why:"Deferring to her in public is praise that doesn't announce itself as praise."},
+  {cat:"big", line:"You've made me better. Not in a vague way — in ways I could list.",
+   why:"The offer of specifics is the proof. Be ready to actually name two."},
+  {cat:"character", line:"You're relentless once you decide something matters. I've watched it. It's impressive.",
+   why:"Men usually hear this about themselves and rarely say it to a woman. It lands hard."},
+  {cat:"invisible", line:"You remember things about people that I forget. They notice, even when they don't say it.",
+   why:"Credits a skill she probably files as ordinary. Nothing about it is ordinary."},
+  {cat:"guitar", line:"You should do more of that. Not for any reason. Just because you love it.",
+   why:"Permission is its own gift — especially from someone whose approval she weighs."},
+  {cat:"choice", line:"There's no version of my life I'd trade this one for.",
+   why:"Total, flat, no hedge. Hedged praise reads as a negotiation."},
+  {cat:"witness", line:"I saw you bite your tongue back there. That took more than saying something would have.",
+   why:"Catching the thing she chose NOT to do proves you were paying real attention."},
+  {cat:"character", line:"You keep your word. I've never once had to wonder.",
+   why:"Reliability is the least-praised virtue precisely because it never causes a problem."},
+  {cat:"repair", line:"You fight fair. Not everyone does.",
+   why:"Praising how she argues, during an argument, ends more fights than being right does."},
+  {cat:"big", line:"I don't tell you enough what you actually mean to me. I'm working on it.",
+   why:"Honest about the gap and about the intent. Both true, neither of them a promise you can break."},
+  {cat:"publicly", line:"I've learned more from her than from anyone I've worked with.",
+   why:"Ranks her against your professional world — the arena she assumes you rate most."},
+  {cat:"witness", line:"You've been carrying something heavy lately and you haven't put it on anyone. I see it.",
+   why:"Naming the unspoken weight, without asking her to explain it, is the safest kind of seen."},
+  {cat:"guitar", line:"Do the thing. I'll clear the evening.",
+   why:"Appreciation delivered as logistics. For some people this is the only dialect that reads as real."},
+  {cat:"choice", line:"Everyone I know is glad I ended up with you. So am I.",
+   why:"Borrowed corroboration plus your own verdict. The second half is the one that matters."},
+  {cat:"repair", line:"I don't want to win this. I want us to be okay.",
+   why:"Drops the leverage model out loud — which is the whole muscle you're training."},
+  {cat:"invisible", line:"You've been holding the boring half of this life so I could do the interesting half. I know that.",
+   why:"The most-owed sentence in most households, and almost never said."}
+];
+
+const A_KEY = "storyteller_appreciation_v1";
+let aShuffle = null;                     // null = the line of the day
+
+function aLoad(){ try{ return JSON.parse(localStorage.getItem(A_KEY))||{} }catch(e){ return {} } }
+function aSave(o){ try{ localStorage.setItem(A_KEY, JSON.stringify(o)) }catch(e){} }
+function aDateKey(off){
+  const d = new Date(Date.now()+off*DAY_MS);
+  return d.getFullYear()+"-"+String(d.getMonth()+1).padStart(2,"0")+"-"+String(d.getDate()).padStart(2,"0");
+}
+function aStreakCount(){
+  const done = aLoad().done || {};
+  let i = done[aDateKey(0)] ? 0 : 1;          // today still counts if not done yet
+  let n = 0;
+  while(done[aDateKey(-i)] && n < 3650){ n++; i++; }
+  return n;
+}
+function renderAppreciation(){
+  const idx = aShuffle !== null ? aShuffle
+    : ((((todayIndexBase()+offset) % LINES.length) + LINES.length) % LINES.length);
+  const L = LINES[idx];
+  $("aTag").textContent  = A_CATS[L.cat] || "Appreciation";
+  $("aLine").textContent = "“" + L.line + "”";
+  $("aWhy").textContent  = L.why;
+
+  const done = aLoad().done || {};
+  const isDone = !!done[aDateKey(offset)];
+  const b = $("aDone");
+  b.className = "abtn" + (isDone ? " done" : "");
+  b.textContent = isDone ? "✓ Said it" : "✓ I said it today";
+
+  const n = aStreakCount();
+  $("aStreak").innerHTML = n > 0
+    ? "🔥 <b>"+n+"</b> day"+(n===1?"":"s")+" in a row"
+    : "no streak yet — start today";
+}
+$("aAnother").onclick = ()=>{ aShuffle = Math.floor(Math.random()*LINES.length); renderAppreciation(); };
+$("aDone").onclick = ()=>{
+  const o = aLoad(); o.done = o.done || {};
+  const k = aDateKey(offset);
+  if(o.done[k]) delete o.done[k]; else o.done[k] = true;
+  aSave(o); renderAppreciation();
+};
 
 render();
 renderJournal();

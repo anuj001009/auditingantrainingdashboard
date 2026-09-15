@@ -33,6 +33,12 @@ to `main` (which auto-deploys to Railway).
 - Optionally add a Wikimedia Commons photo to `PHOTOS` if a well-known file exists.
 - Apply everything under **Thoughts & requests**, then move handled items to the log below,
   stamped with the date.
+- The **Say it out loud** section (`LINES` / `A_CATS`) is a separate library from the stories.
+  If a request under *Thoughts & requests* asks for more appreciation lines, add them to `LINES`
+  with the shape `cat`, `line`, `why` — `cat` must be one of the keys in `A_CATS`. Keep lines
+  **specific and flat-spoken**, never greeting-card; the `why` explains the mechanism in one sentence.
+  Do not reorder `LINES` (the line of the day is index-based, but reordering just reshuffles — harmless,
+  yet appending is tidier).
 - Run a JS syntax check, then commit and push to `main`.
 
 ---
